@@ -4,7 +4,7 @@ A selection of lectures and exercises for the PrivateNLP course at Ruhr-Universi
 
 ## Lectures
 
-You will find the slide PDFs under `lectures/lectureAB/pdf/`
+You will find the slide PDFs under `lectures/lectureXY/pdf/`. The `handout` version is more compact, the `lecture` version is usually longer as it contains pauses used in the lectures.
 
 Lecture 01 - Introduction (what is privacy, when things go wrong)
 
