@@ -8,3 +8,22 @@ Lecture 7 – Approximate Differential Privacy and Gaussian Mechanism
 Lecture 8 – Differentially-Private Stochastic Gradient Descent
 Lecture 9 – Applications of DP-SGD in NLP research
 Lecture 10 – Machine Unlearning
+
+
+
+Exercises
+
+Ex 01: Refresher on math and probability theory
+
+- functions, domain, co-domain, range
+- set theory, cartesian products
+- norms (l1, l2 norm)
+- triangle inequality, negative triangle inequality
+- Bernoulli distribution, expectation, LOTUS
+- Laplace distribution, tail bounds
+- Gaussian distribution, tail bounds
+- KL divergence of discrete random variables
+
+
+(Rényi divergence)
+(Max divergence)
