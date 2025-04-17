@@ -8,6 +8,8 @@ You will find the slide PDFs under `lectures/lectureXY/pdf/`. The `handout` vers
 
 Lecture 01 - Introduction (what is privacy, when things go wrong)
 
+Lecture 02 - Text anonymization
+
 ## Exercises
 
-Exercise 01
+Exercise 01 - in person, refresher on probability theory (and homeworks on simple proofs for Laplace tail bounds and negative triangle inequality)

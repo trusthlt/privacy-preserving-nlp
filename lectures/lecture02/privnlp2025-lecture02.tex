@@ -118,6 +118,23 @@ As a risk factor is always inherent to anonymisation, this must be considered wh
 \end{frame}
 
 
+\begin{frame}{HIPAA}
+
+The U.S. Health Insurance Portability and Accountability Act (HIPAA, 1996)
+
+\begin{itemize}
+\item Specifically to personal information in medical data
+\item ``Safe Harbor" method --- requires removal of 18 types of protected health information (PHI), including names, location, phone numbers
+\end{itemize}
+
+One the method is applied and PHI removed, the data might be published and are no longer subject to the HIPAA privacy rules
+
+
+\end{frame}
+
+
+\subsection{Text anonymization in NLP}
+
 \begin{frame}{Text anonymization}
 
 Complete and irreversible removal of personally identifiable information (PII) from text data
@@ -403,6 +420,24 @@ Separate recall measures for the direct id (person’s names, case numbers, etc.
 \includegraphics[width=0.95\linewidth]{img/hagen2}
 \end{frame}
 
+
+\begin{frame}{Attacks on anonymized documents}
+
+Explored reconstructing Swiss court decisions (cases from the federal court)
+
+
+Auxiliary data: Created a dataset by manually linking court rulings and newspaper articles using keywords, e.g., ``4A\_375/2021", "10 years in prison", etc.
+
+\includegraphics[width=0.7\linewidth]{img/swiss.jpg}
+
+
+
+\begin{tikzpicture}[overlay, remember picture]
+\node at (current page.north east)[ref] {
+\fullcite{Nyffenegger.et.al.2024.FindingsNAACL} \par};
+\end{tikzpicture}
+
+\end{frame}
 
 
 
