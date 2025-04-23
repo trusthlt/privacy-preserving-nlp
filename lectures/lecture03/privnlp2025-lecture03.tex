@@ -21,8 +21,8 @@
 
 
 \title{Privacy-Preserving Natural Language Processing}
-\subtitle{Lecture 2 -- Text anonymization}
-\date{April 17, 2025}
+\subtitle{Lecture 3 -- Introduction to Differential Privacy}
+\date{April 24, 2025}
 \author{Prof.\ Dr.\ Ivan Habernal}
 \institute{
 \texttt{www.trusthlt.org} \\
@@ -34,420 +34,804 @@ Ruhr University Bochum \& Research Center Trustworthy Data Science and Security}
 \maketitle
 
 
+\section{Intro}
 
-\section{Anonymization and the GDPR}
+\begin{frame}{Overview}
 
-\begin{frame}{Personal data}
+First lecture: privacy definitions, arbitrary hard choices
 
-Data is deemed personal if the information relates to an identified or identifiable individual
+Second lectures: still arbitrary choice in anonymization, but GDPR notion of possibility of deidentification
 
-Art. 4 No. 1 GDPR.
+Today: towards probabilistic approach to privacy
 
 
-General Data Protection Regulation --- a European Union regulation on information privacy in the European Union (EU) and the European Economic Area (EEA)
-
-Enhance individuals' control and rights over their personal information and to simplify the regulations for international business
-
-\begin{tikzpicture}[overlay, remember picture]
-\node at (current page.north east)[ref] {
-\fullcite{Voigt.Bussche.2017} \par};
-\end{tikzpicture}
+%\begin{tikzpicture}[overlay, remember picture]
+%\node at (current page.north east)[ref] {
+%\fullcite{Voigt.Bussche.2017} \par};
+%\end{tikzpicture}
 \end{frame}
 
 
-\begin{frame}{Personal data}
+\section{Differential privacy basics}
 
-Individual does not need to be identified already.
 
-The mere possibility of identification, \textbf{identifiability}, will render data \textbf{personal} under the GDPR
 
-Identification --- by combining different information that by themselves would not have traced back to the person but does so in combination
+\begin{frame}{Precursors of differential privacy}
 
-\begin{tikzpicture}[overlay, remember picture]
-\node at (current page.north east)[ref] {
-\fullcite{Voigt.Bussche.2017} \par};
-\end{tikzpicture}
-\end{frame}
+"Let us begin with a short story. Envision a database of a hospital containing the medical history of some population. On one hand, the hospital would like to advance medical research which is based (among other things) on statistics of the information in the database. On the other hand, the hospital is obliged to keep the privacy of its patients, i.e. leak no medical information that could be related to a specific patient. The hospital needs an access mechanism to the database that allows certain ‘statistical’ queries to be answered, as long as they do not violate the privacy of any single patient."
 
-\begin{frame}{Personal data}
-
-``In October 2016, the ECJ ruled that the risk of identification appears insignificant in reality if it requires a disproportionate effort in terms of time, cost and manpower, the aforementioned being relative criteria.''
-
-``Hence, a person can be considered as identifiable if the missing information that would allow identification is (easily) accessible, for instance, because it is published on the Internet or in a (commercial) information service.''
-
-\citep[p.~12]{Voigt.Bussche.2017}
 
 \begin{tikzpicture}[overlay, remember picture]
 \node at (current page.north east)[ref] {
-\fullcite{Voigt.Bussche.2017} \par};
+\fullcite{dinurRevealingInformationPreserving2003} \par};
 \end{tikzpicture}
 \end{frame}
 
 
 
-\begin{frame}{Anonymization}
+\begin{frame}{Precursors of differential privacy}
 
-A way of modification of personal data with the result that there remains no connection of data with an individual
+"We focus on binary databases, where the content is of $n$ binary (0-1) entries"
 
-Anonymised data is personal data that was rendered anonymous in such a manner that the person is no longer \textbf{identifiable}
-
-``In case of an effective anonymisation, the GDPR does not apply"
-
-\citep[p.~13]{Voigt.Bussche.2017}
 
 \begin{tikzpicture}[overlay, remember picture]
 \node at (current page.north east)[ref] {
-\fullcite{Voigt.Bussche.2017} \par};
+\fullcite{dinurRevealingInformationPreserving2003} \par};
 \end{tikzpicture}
 \end{frame}
 
 
 
-\begin{frame}{Anonymization: Practical Advice}
+\begin{frame}{First DP papers}
 
-As the EU does not provide for a standard of successful anonymisation, a combination of \textbf{randomisation} and \textbf{generalisation} techniques should be considered for stronger privacy guarantees
-
-As a risk factor is always inherent to anonymisation, this must be considered when assessing possible techniques corresponding to the severity and likelihood of the identified risk. As a consequence, the optimal solution needs to be determined on a case-by-case basis
-
-\citep[p.~14]{Voigt.Bussche.2017}
+"The database consists of some number $n$ of rows. We are completely agnostic about the type of rows – they may be tuples of attributes, strings, or even pictures."
 
 \begin{tikzpicture}[overlay, remember picture]
 \node at (current page.north east)[ref] {
-\fullcite{Voigt.Bussche.2017} \par};
+\fullcite{blumPracticalPrivacySuLQ2005} \par};
 \end{tikzpicture}
 \end{frame}
 
 
-\begin{frame}{HIPAA}
-
-The U.S. Health Insurance Portability and Accountability Act (HIPAA, 1996)
-
-\begin{itemize}
-\item Specifically to personal information in medical data
-\item ``Safe Harbor" method --- requires removal of 18 types of protected health information (PHI), including names, location, phone numbers
-\end{itemize}
-
-One the method is applied and PHI removed, the data might be published and are no longer subject to the HIPAA privacy rules
+\begin{frame}{Explicit notion of independence of rows}
 
 
-\end{frame}
-
-
-\subsection{Text anonymization in NLP}
-
-\begin{frame}{Text anonymization}
-
-Complete and irreversible removal of personally identifiable information (PII) from text data
-
-\begin{block}{PII}
-\begin{itemize}
-\item Directly (name, passport, number, phone number, social media ID)
-\item Indirectly (gender, nationality, date of birth, etc.)
-\end{itemize}
-\end{block}
-
-\begin{tikzpicture}[overlay, remember picture]
-\node at (current page.north east)[ref] {
-\fullcite{Yermilov.et.al.2023.TrustWS} \par};
-\end{tikzpicture}
-	
-\end{frame}
-
-
-\begin{frame}{Text anonymization}
-
-Is complete anonymization possible?
-
-\begin{tikzpicture}[overlay, remember picture]
-\node at (current page.north east)[ref] {
-\fullcite{Yermilov.et.al.2023.TrustWS} \par};
-\end{tikzpicture}
-	
-\end{frame}
-
-
-
-
-\begin{frame}{Two sub-tasks of anonymization}
-
-\begin{block}{De-identification}
-Process of removing specific, predefined direct identifiers from a dataset
-\end{block}
-
-\begin{block}{Pseudonymisation}
-Process of replacing direct identifiers with pseudonyms or coded values (such ``John Doe" $\rightarrow$ ``Patient 3"). The mapping between coded values and the original identifiers is then stored separately.
+\begin{block}{Dependency Between Database Records}
+``We explicitly assume that the database records are chosen independently from each other, according to some underlying distribution $D$. We are not aware of any work that does not make this assumption (implicitly or explicitly)."
 \end{block}
 
 
-``NLP research on text anonymisation has focused to a large extent on the tasks of de-identification" \citep[p.~4190]{Lison.et.al.2021.ACL}
-
 \begin{tikzpicture}[overlay, remember picture]
 \node at (current page.north east)[ref] {
-\fullcite{Lison.et.al.2021.ACL} \par};
+\fullcite{Dwork.Nissim.2004.CRYPTO} \par};
 \end{tikzpicture}
 \end{frame}
 
+\begin{frame}{Explicit notion of independence of rows}
 
 
-\begin{frame}{Two sub-tasks of anonymization}
-
-De-identification generally modelled as a sequence labelling task, similar to Named Entity Recognition
+"The intent of the independence assumption is to characterize what information is under the control of a given individual. Specifically, \textbf{if there is information about a row that can be learned from other rows, this information is not truly under the control of that row.} Even if the row in question were to sequester itself away in a high mountaintop cave, information about the row that can be gained from the analysis of other rows is still available to an adversary. It is for this reason that \textbf{we focus our attention on those inferences that can be made about rows without the help of others}."
 
 
 \begin{tikzpicture}[overlay, remember picture]
 \node at (current page.north east)[ref] {
-\fullcite{Lison.et.al.2021.ACL} \par};
+\fullcite{blumPracticalPrivacySuLQ2005} \par};
 \end{tikzpicture}
 \end{frame}
 
-\section{Case studies in anonymization}
+\section{Dataset}
 
-\begin{frame}{Case-study: Job postings}
+\begin{frame}{Dataset (or Database)}
+
+\begin{block}{The essential assumption (in words)}
+Each person corresponds to a single row in a table
+\end{block}
+
+The semantics of columns is arbitrary:
 
 \begin{itemize}
-\item Task: detecting privacy-related entities in job posts on StackOverflow
-\item Intention: cannot identify which company posted the job (name of the employees who posted and their contact information)
-\item New data: 22k EN sentences annotated with person names, contact details, and profession
-\item Five entities (Org, Loc, Contact, Name, Profession)
-\item Annotation study: three annotators, good kappa, well-done study
-\item Models: entity taggers (LSTM, BERT) + auxiliary tasks
+\item It could be an actual "table" with some sensitive attributes (e.g., age, income)
+\item It could be just an arbitrary unstructured object (e.g., personal photo, text)
+\end{itemize}
+
+%\begin{tikzpicture}[overlay, remember picture]
+%\node at (current page.north east)[ref] {
+%\fullcite{Voigt.Bussche.2017} \par};
+%\end{tikzpicture}
+\end{frame}
+
+
+\begin{frame}{Dataset}
+
+\begin{block}{Another implicit assumption}
+Each row contains data (values or attributes) that "belong" to this row's person
+\end{block}
+
+
+\begin{block}{Implication of the above assumption}
+Example: If person A is removed from the dataset, you cannot certainly tell her private attributes from some other row B, C, D.
+\end{block}
+
+
+
+%\begin{tikzpicture}[overlay, remember picture]
+%\node at (current page.north east)[ref] {
+%\fullcite{Voigt.Bussche.2017} \par};
+%\end{tikzpicture}
+\end{frame}
+
+
+\begin{frame}{Examples of implicit assumptions}
+
+\begin{table}
+\footnotesize
+\begin{tabular}{lrr} \toprule
+Name & Income & Age \\ \midrule
+Bob & 700 & 21 \\
+Alice & 2,800 & 32 \\
+Charlie & 3,500 & 45 \\ \bottomrule
+\end{tabular}
+\caption{Looks legit, no clear violation of the assumptions}
+\end{table}
+
+\vspace{-1em}
+\begin{table}
+\footnotesize
+\begin{tabular}{lrrr} \toprule
+Name & Income & Age & Someone else's income \\ \midrule
+Bob & 700 & 21 & Alice: 2,800\\
+Alice & 2,800 & 32 & Charlie: 3,500 \\
+Charlie & 3,500 & 45 & Alice: 2,800 \\ \bottomrule
+\end{tabular}
+\caption{Something looks wrong with this dataset}
+\end{table}
+
+%\begin{tikzpicture}[overlay, remember picture]
+%\node at (current page.north east)[ref] {
+%\fullcite{Voigt.Bussche.2017} \par};
+%\end{tikzpicture}
+\end{frame}
+
+\begin{frame}{Examples of implicit assumptions}
+
+
+\begin{table}
+\footnotesize
+\begin{tabular}{lrr} \toprule
+Name & Income & Age \\ \midrule
+Bob & 700 & 21 \\
+Alice & 2,800 & 32 \\
+Charlie & 3,500 & 45 \\
+Alice & 2,800 & 32 \\
+\bottomrule
+\end{tabular}
+\caption{Something looks wrong with this dataset}
+\end{table}
+
+%\begin{tikzpicture}[overlay, remember picture]
+%\node at (current page.north east)[ref] {
+%\fullcite{Voigt.Bussche.2017} \par};
+%\end{tikzpicture}
+\end{frame}
+
+
+
+\section{Statistical queries}
+
+
+\begin{frame}{Real-valued query}
+
+"Trusted server that holds a database of sensitive information. Given a query function $f$ mapping databases to reals, the so-called true answer is the result of applying $f$ to the database. [...]"
+
+\begin{block}{Query}
+Let $X$ be a database from a universe (a set) of all possible databases $\mathcal{X}$
+
+Real-valued query is
+$$
+f: \mathcal{X} \mapsto \mathbb{R}
+$$
+\end{block}
+
+
+
+\begin{tikzpicture}[overlay, remember picture]
+\node at (current page.north east)[ref] {
+\fullcite{dworkCalibratingNoiseSensitivity2006} \par};
+\end{tikzpicture}
+\end{frame}
+
+
+
+\begin{frame}{Query example -- "counting" query}
+
+"A query consists of a pair $(S, f)$ where $S$ is a set of rows in the database and $f$ is a function mapping database rows to $\{0, 1\}$. The true answer is $\sum_{i \in S} f(d_i)$"
+
+\begin{itemize}
+\item implicitly assuming $d_i$ is the $i$-th entry from $S$
+\item also note inconsistencies in notations, inevitable in every new field being just formalized!! Here $f$ maps a "row" to zero or one, previous slide $f$ would be the whole sum
+\end{itemize}
+
+\begin{tikzpicture}[overlay, remember picture]
+\node at (current page.north east)[ref] {
+\fullcite{dworkCalibratingNoiseSensitivity2006} \par};
+\end{tikzpicture}
+\end{frame}
+
+
+\begin{frame}{How could a counting query leak private information?}
+
+"It's just a statistics (a sum), so I can hide in the crowd!"
+
+\begin{block}{What is private information}
+The secret "bit" $f(d_i) \mapsto \{0, 1\}$
+
+which eventually corresponds to whether or not you are in the database
+\end{block}
+
+
+\begin{itemize}
+\item If your are in the database, you cannot control others
+\item What if the database is very small?
+\item What if the database is queried repeatedly?
+\item What if you are an outlier?
 \end{itemize}
 
 
+
+
+%\begin{tikzpicture}[overlay, remember picture]
+%\node at (current page.north east)[ref] {
+%\fullcite{Voigt.Bussche.2017} \par};
+%\end{tikzpicture}
+\end{frame}
+
+
+
+\subsection{How to protect privacy in counting queries}
+
+
+\begin{frame}{Example}
+
+\begin{table}
+\footnotesize
+\begin{tabular}{lrrr} \toprule
+Name & Hospitalized in year & Age & Illegal drug use \\ \midrule
+Alice & 2024 & 32 & yes \\
+Bob & 2020 & 21 & no \\
+Charlie & 2023 & 45 & no \\
+$\ldots$ & & & \\
+Xander & 2020 & 31 & yes \\ \bottomrule
+\end{tabular}
+\caption{A sensitive database example from a clinic}
+\end{table}
+
+Query: How many persons in the database take illegal drugs?
+
 \begin{tikzpicture}[overlay, remember picture]
 \node at (current page.north east)[ref] {
-\fullcite{Jensen.et.al.2021.NoDaLiDa} \par};
+(Important to clarify for context: If you are Alice, how did you end up in such a database?) \par};
+\end{tikzpicture}
+
+
+
+%\begin{tikzpicture}[overlay, remember picture]
+%\node at (current page.north east)[ref] {
+%\fullcite{Voigt.Bussche.2017} \par};
+%\end{tikzpicture}
+\end{frame}
+
+
+\begin{frame}{Example: How many persons in the database take illegal drugs?}
+
+\begin{table}
+\scriptsize
+\begin{tabular}{lrrr} \toprule
+Name & Hospitalized in year & Age & Illegal drug use \\ \midrule
+Alice & 2024 & 32 & yes \\
+Bob & 2020 & 21 & no \\
+Charlie & 2023 & 45 & no \\
+$\ldots$ & & & \\
+Xander & 2020 & 31 & yes \\ \bottomrule
+\end{tabular}
+\end{table}
+
+What might be public information: the size of the dataset (say $n = 100$)
+
+The true answer to the query: 2
+
+If Xander reveals his drug use, and we know Alice is in the database, her privacy is revealed!
+
+%\begin{tikzpicture}[overlay, remember picture]
+%\node at (current page.north east)[ref] {
+%\fullcite{Voigt.Bussche.2017} \par};
+%\end{tikzpicture}
+\end{frame}
+
+
+
+
+
+
+\subsection{How to protect privacy}
+
+
+\begin{frame}{Privatizing the query result}
+
+How would you go about it?
+
+%\begin{tikzpicture}[overlay, remember picture]
+%\node at (current page.north east)[ref] {
+%\fullcite{Voigt.Bussche.2017} \par};
+%\end{tikzpicture}
+\end{frame}
+
+
+
+
+
+\begin{frame}{Solution: Alter the query result}
+
+Changes to the true query result must be \textbf{irreversible}!
+
+"A natural approach, and one that has been explored by others in the 1980’s, is to add random noise to the answer" \citep{blumPracticalPrivacySuLQ2005}
+
+"It is evident that without randomness there is no privacy: if everything is pre-determined, and all possible choices we make are predictable or pre-programmed by our adversaries, then there is nothing that we can build our privacy on." \citep{ekertUltimatePhysicalLimits2014} 
+
+\begin{tikzpicture}[overlay, remember picture]
+\node at (current page.north east)[ref] {
+\fullcite{blumPracticalPrivacySuLQ2005} \\
+\fullcite{ekertUltimatePhysicalLimits2014} \par};
 \end{tikzpicture}
 \end{frame}
 
 
 
 
-\begin{frame}{Case-study: Geman e-mails}
 
-\begin{itemize}
-\item Focuses on PII recognition and substitution with surrogates
-\item Dataset: "CodE Alltag", German e-mails from a) USENET and b) donations
-\item Entity types: more than NER - names, orgs, city names, zip codes, street names, street numbers, dates, passwords, e-mails, URLs, phone numbers (see the next slides)
-\item Experiments: detect PIIs (BIO tagging)
-\end{itemize}
 
-\begin{tikzpicture}[overlay, remember picture]
-\node at (current page.north east)[ref] {
-\fullcite{Eder.et.al.2022.LREC} \par};
-\end{tikzpicture}
+\begin{frame}{How to randomize the query result?}
 
+Recall: The counting query output is a natural number
+
+How should we randomize it?
+
+-- Draw a random value from a probability distribution
+
+-- Which one? How parametrized?
+
+%\begin{tikzpicture}[overlay, remember picture]
+%\node at (current page.north east)[ref] {
+%\fullcite{Voigt.Bussche.2017} \par};
+%\end{tikzpicture}
 \end{frame}
 
 
-\begin{frame}{Case-study: Geman e-mails --- PII types}
+
+
+
+\begin{frame}{What we want}
+
+The randomized output will be likely close to the true value, and unlikely far away
+
+
+%\begin{tikzpicture}[overlay, remember picture]
+%\node at (current page.north east)[ref] {
+%\fullcite{Voigt.Bussche.2017} \par};
+%\end{tikzpicture}
+\end{frame}
+
+
+
+
+\begin{frame}{The Laplace distribution}
 
 \begin{figure}
-\includegraphics[width=0.55\linewidth]{img/eder-et-al-2.png}
+\includegraphics[width=0.8\linewidth]{img/laplace-distributions.pdf}
+\caption{Laplace PDF (probability density function)}
 \end{figure}
+$$
+\textrm{Lap}(x; \mu, b) = \frac{1}{2b} \exp \left( - \frac{\abs{x - \mu}}{b}  \right)
+$$
 
-\begin{tikzpicture}[overlay, remember picture]
-\node at (current page.north east)[ref] {
-\fullcite{Eder.et.al.2022.LREC} \par};
-\end{tikzpicture}
-
+%\begin{tikzpicture}[overlay, remember picture]
+%\node at (current page.north east)[ref] {
+%\fullcite{Voigt.Bussche.2017} \par};
+%\end{tikzpicture}
 \end{frame}
 
-\begin{frame}{Case-study: Geman e-mails --- Overview}
+
+
+
+
+\begin{frame}{How to choose the parameters?}
+
+Location and scale
+
+-- Location: the true value
+
+-- Scale?
+
+Let's pick $b = 1$ just for lack of better ideas :)
+
+%\begin{tikzpicture}[overlay, remember picture]
+%\node at (current page.north east)[ref] {
+%\fullcite{Voigt.Bussche.2017} \par};
+%\end{tikzpicture}
+\end{frame}
+
+
+
+\begin{frame}{It's all nice and random, but what does it give us?}
+
+Query: How many persons in the database take illegal drugs?
+
+\begin{table}
+\footnotesize
+\begin{tabular}{lrrr} \toprule
+Name & Hospitalized in year & Age & Illegal drug use \\ \midrule
+Alice & 2024 & 32 & yes \\
+Bob & 2020 & 21 & no \\
+Charlie & 2023 & 45 & no \\
+$\ldots$ & & & \\
+Xander & 2020 & 31 & yes \\ \bottomrule
+\end{tabular}
+\caption{Database $D$, including Alice}
+\end{table}
+
+
+Assume that the true answer is 51
+
+%\begin{tikzpicture}[overlay, remember picture]
+%\node at (current page.north east)[ref] {
+%\fullcite{Voigt.Bussche.2017} \par};
+%\end{tikzpicture}
+\end{frame}
+
+
+\begin{frame}{It's all nice and random, but what does it give us?}
+
+What if Alice decided \textbf{not to be part of the data}?
+
+-- She has the right to decide about her privacy, GDPR, etc.
+
+\begin{table}
+\footnotesize
+\begin{tabular}{lrrr} \toprule
+Name & Hospitalized in year & Age & Illegal drug use \\ \midrule
+Bob & 2020 & 21 & no \\
+Charlie & 2023 & 45 & no \\
+$\ldots$ & & & \\
+Xander & 2020 & 31 & yes \\ \bottomrule
+\end{tabular}
+\caption{Database $D'$, \textbf{excluding} Alice}
+\end{table}
+
+The true answer to the query would be now 50
+
+
+%\begin{tikzpicture}[overlay, remember picture]
+%\node at (current page.north east)[ref] {
+%\fullcite{Voigt.Bussche.2017} \par};
+%\end{tikzpicture}
+\end{frame}
+
+
+\begin{frame}{We have two databases: With and without Alice}
+
+Privatize for $D$ (with Alice), true answer is 51
+$$
+Y \sim \frac{1}{2b} \exp \left( \frac{-\abs{x - 51}}{b} \right) = \frac{1}{2} \exp \left( -\abs{x - 51} \right) 
+$$
 
 \begin{figure}
-\includegraphics[width=0.50\linewidth]{img/eder-et-al-1.png}
+\centering
+\includegraphics[width=0.7\linewidth]{img/laplace-density1.pdf}
+\caption{Laplace density, $\mu = 51, b = 1$}
 \end{figure}
 
-\begin{tikzpicture}[overlay, remember picture]
-\node at (current page.north east)[ref] {
-\fullcite{Eder.et.al.2022.LREC} \par};
-\end{tikzpicture}
-
+%\begin{tikzpicture}[overlay, remember picture]
+%\node at (current page.north east)[ref] {
+%\fullcite{Voigt.Bussche.2017} \par};
+%\end{tikzpicture}
 \end{frame}
 
 
-\begin{frame}{Case-study: Geman e-mails --- Evaluation}
 
-BIO scheme: `B' --- Beginning of an entity, `I' (Inside) for its continuation, and ‘O’ (Outside) for tokens that do not belong to any pi entity)
+\begin{frame}{Now without Alice}
 
-Weighted average of precision, recall and F1 score
+
+Privatize for $D'$ (without Alice), true answer is 50
+$$
+Y' \sim \frac{1}{2b} \exp \left( \frac{-\abs{x - 50}}{b} \right) = \frac{1}{2} \exp \left( -\abs{x - 50} \right) 
+$$
+
 
 \begin{figure}
-\includegraphics[width=\linewidth]{img/eder-et-al-3}
+\centering
+\includegraphics[width=0.7\linewidth]{img/laplace-density2.pdf}
+\caption{Laplace density, $\mu = 50, b = 1$}
 \end{figure}
 
-How robustly does the system protect privacy?
-
-\begin{tikzpicture}[overlay, remember picture]
-\node at (current page.north east)[ref] {
-\fullcite{Eder.et.al.2022.LREC} \par};
-\end{tikzpicture}
-
+%\begin{tikzpicture}[overlay, remember picture]
+%\node at (current page.north east)[ref] {
+%\fullcite{Voigt.Bussche.2017} \par};
+%\end{tikzpicture}
 \end{frame}
 
-
-
-\begin{frame}{Case-study: MAPA project}
-
-\begin{itemize}
-\item 3-level hierarchy of entities: level 1: person, time, location, organization, amount, vehicle
-\end{itemize}
+\begin{frame}{Both variables in one plot}
+$
+Y \sim  \frac{1}{2} \exp \left( -\abs{x - 51} \right) \qquad
+Y' \sim \frac{1}{2} \exp \left( -\abs{x - 50} \right) 
+$
 
 \begin{figure}
-\includegraphics[width=0.48\linewidth]{img/mapa1}
-\includegraphics[width=0.48\linewidth]{img/mapa2}
+\centering
+\includegraphics[width=0.6\linewidth]{img/laplace-02.pdf}
+\caption{Blue = with Alice, red = without Alice}
 \end{figure}
 
+Now observe a particular value $y \in \mathbb{R}$, for example 52
 
-\begin{tikzpicture}[overlay, remember picture]
-\node at (current page.north east)[ref] {
-\fullcite{Arranz.et.al.2022.WS} \par};
-\end{tikzpicture}
+-- Was it sampled from $Y$ or from $Y'$?
 
+%\begin{tikzpicture}[overlay, remember picture]
+%\node at (current page.north east)[ref] {
+%\fullcite{Voigt.Bussche.2017} \par};
+%\end{tikzpicture}
+\end{frame}
+
+
+\begin{frame}{If we observed 52, was it sampled from $Y$ or from $Y'$?}
+
+We cannot really tell!
+
+But we can compare probabilities of this event\footnote{We must compare densities, so our math will not break}
+
+$
+\Pr[Y = 52] = \frac{1}{2} \exp \left( -\abs{52 - 51} \right) = 0.5 \exp(-1)
+$
+$
+\Pr[Y' = 52] = \frac{1}{2} \exp \left( -\abs{52 - 50} \right) = 0.5 \exp(-2)
+$
+
+How much more likely from $Y$?
+$
+\frac{\Pr[Y = 52]}{\Pr[Y' = 52]}
+= \frac{0.5 \exp(1)}{0.5 \exp(2)} = \exp(-1) = 0.367
+$
+
+How much more likely from $Y'$?
+$
+\frac{\Pr[Y' = 52]}{\Pr[Y = 52]}
+= \frac{0.5 \exp(2)}{0.5 \exp(1)} = \exp(1) = 2.718
+$
+
+%\begin{tikzpicture}[overlay, remember picture]
+%\node at (current page.north east)[ref] {
+%\fullcite{Voigt.Bussche.2017} \par};
+%\end{tikzpicture}
+\end{frame}
+
+
+
+\begin{frame}{Both variables in one plot}
+$
+Y \sim  \frac{1}{2} \exp \left(- \abs{x - 51} \right) \qquad
+Y' \sim \frac{1}{2} \exp \left(- \abs{x - 50} \right) 
+$
+
+\begin{figure}
+\centering
+\includegraphics[width=0.6\linewidth]{img/laplace-02.pdf}
+\caption{Blue = with Alice, red = without Alice}
+\end{figure}
+
+Now observe a particular value $y \in \mathbb{R}$, for example 50
+
+-- Was it sampled from $Y$ or from $Y'$?
+
+%\begin{tikzpicture}[overlay, remember picture]
+%\node at (current page.north east)[ref] {
+%\fullcite{Voigt.Bussche.2017} \par};
+%\end{tikzpicture}
+\end{frame}
+
+
+
+\begin{frame}{If we observed 50, was it sampled from $Y$ or from $Y'$?}
+
+$
+\Pr[Y = 50] = \frac{1}{2} \exp \left(- \abs{50 - 51} \right) = 0.5 \exp(-1)
+$
+$
+\Pr[Y' = 50] = \frac{1}{2} \exp \left(- \abs{50 - 50} \right) = 0.5 \exp(0)
+$
+
+How much more likely from $Y$?
+$
+\frac{\Pr[Y = 50]}{\Pr[Y' = 50]}
+= \frac{0.5 \exp(-1)}{0.5 \exp(0)} = \exp(-1) = 0.367
+$
+
+How much more likely from $Y'$?
+$
+\frac{\Pr[Y' = 50]}{\Pr[Y = 50]}
+= \frac{0.5 \exp(0)}{0.5 \exp(-1)} = \exp(1) = 2.718
+$
+
+It seems like the odds ratio is bounded from above...
+
+%\begin{tikzpicture}[overlay, remember picture]
+%\node at (current page.north east)[ref] {
+%\fullcite{Voigt.Bussche.2017} \par};
+%\end{tikzpicture}
+\end{frame}
+
+\begin{frame}{Can we generalize it for any observed $x$?}
+
+\begin{figure}
+\centering
+\includegraphics[width=0.8\linewidth]{img/laplace-03.pdf}
+\end{figure}
+
+Seems like the maximum we can get is $2.718 = e = \exp(1)$
+
+%\begin{tikzpicture}[overlay, remember picture]
+%\node at (current page.north east)[ref] {
+%\fullcite{Voigt.Bussche.2017} \par};
+%\end{tikzpicture}
+\end{frame}
+
+
+\begin{frame}{Let's try to prove it}
+
+We need triangle inequality for absolute values:\footnote{Homework: Prove it! $x, y \in \mathbb{R}$}
+$\abs{x} - \abs{y} \leq \abs{x - y}$
+
+$$
+\begin{aligned}
+\frac{\Pr[Y = x]}{\Pr[Y' = x]} =
+\frac{
+\frac{1}{2} \exp \left(- \abs{x - 51} \right)
+}{
+\frac{1}{2} \exp \left(-\abs{x - 50} \right) 
+}
+&= \exp ( \abs{x - 50} - \abs{x - 51} ) \\
+&\leq \exp ( \abs{(x - 50) - (x - 51)} ) \\
+&= \exp ( \abs{x - 50 - x + 51} ) \\
+&= \exp ( \abs{1}) = \exp(1) \\
+\end{aligned}
+$$
+
+\end{frame}
+
+
+\begin{frame}{Let's try to prove it (part 2)}
+
+
+$$
+\begin{aligned}
+\frac{\Pr[Y' = x]}{\Pr[Y = x]} =
+\frac{
+	\frac{1}{2} \exp \left( - \abs{x - 50} \right)
+}{
+	\frac{1}{2} \exp \left( - \abs{x - 51} \right) 
+}
+&= \exp ( \abs{x - 51} - \abs{x - 50} ) \\
+&\leq \exp ( \abs{(x - 51) - (x - 50)} ) \\
+&= \exp ( \abs{x - 51 - x + 50} ) \\
+&= \exp (\abs{-1}) = \exp(1)
+\end{aligned}
+$$
+
+
+
+%\begin{tikzpicture}[overlay, remember picture]
+%\node at (current page.north east)[ref] {
+%\fullcite{Voigt.Bussche.2017} \par};
+%\end{tikzpicture}
+\end{frame}
+
+
+\begin{frame}{What does that mean?}
+\begin{figure}
+\centering
+\includegraphics[width=0.4\linewidth]{img/laplace-02.pdf}
+\caption{Blue = with Alice, red = without Alice, $Y \sim  \frac{1}{2} \exp \left(- \abs{x - 51} \right) \qquad
+Y' \sim \frac{1}{2} \exp \left(- \abs{x - 50} \right)$}
+\end{figure}
+
+$
+\frac{\Pr[Y = x]}{\Pr[Y' = x]} \leq \exp(1) \qquad
+\frac{\Pr[Y' = x]}{\Pr[Y = x]} \leq \exp(1)
+$
+
+
+No matter what value we get after privatizing the counting query -- we can only get some limited "information" about whether it came from $Y$ or $Y'$.
+
+
+
+%\begin{tikzpicture}[overlay, remember picture]
+%\node at (current page.north east)[ref] {
+%\fullcite{Voigt.Bussche.2017} \par};
+%\end{tikzpicture}
 \end{frame}
 
 
 
 
 
-\begin{frame}{Case-study: MAPA project}
+\begin{frame}{What if the true answer would be the same for $D$ and $D'$?}
 
-\begin{itemize}
-\item  NER model: BERT
-\item  Classification only in 2 levels of hierarchy
-\item  Rntity replacement: random or using a LM
-\item  Datasets: EUR-LEX (2k sentences per lang)
-\item  Medical data: created “fake ones” in French by replacing “he”, “she”, “the patient” with fake names
-\item  Also some legal judgment in Spanish
-\item  Annotated data machine-translated
-\end{itemize}
+Alice did not take drugs
+$
+Y \sim  \frac{1}{2} \exp \left(- \abs{x - 50} \right) \qquad
+Y' \sim \frac{1}{2} \exp \left(- \abs{x - 50} \right) 
+$
 
-\begin{tikzpicture}[overlay, remember picture]
-\node at (current page.north east)[ref] {
-\fullcite{Arranz.et.al.2022.WS} \par};
-\end{tikzpicture}
+\begin{figure}
+\centering
+\includegraphics[width=0.4\linewidth]{img/laplace-density2.pdf}
+\caption{Both have the same distribution}
+\end{figure}
+
+$
+\frac{\Pr[Y = x]}{\Pr[Y' = x]} = 1 \leq \exp(1) \qquad
+\frac{\Pr[Y' = x]}{\Pr[Y = x]} = 1 \leq \exp(1)
+$
+
+So the maximum "loss" only when the presence of Alice changes the query output
+
+%\begin{tikzpicture}[overlay, remember picture]
+%\node at (current page.north east)[ref] {
+%\fullcite{Voigt.Bussche.2017} \par};
+%\end{tikzpicture}
 \end{frame}
 
 
+\begin{frame}{What if the true answer would be 22?}
 
+Alice did not take drugs
+$
+Y \sim  \frac{1}{2} \exp \left(- \abs{x - 22} \right) \qquad
+Y' \sim \frac{1}{2} \exp \left( -\abs{x - 22} \right) 
+$
 
-\begin{frame}{Case study: Pseudonymization with LLMs}
+-- bounded by 1 as in the previous slide 
 
-\begin{itemize}
-\item Pseudonymization adopted from \citet{Eder.et.al.2022.LREC} --- recognize and replace entities
-\item Tested 3 approaches: NER, seq2seq (enc-dec), LLM with zero shot
-\item 3 classes of entities: PER, LOC, ORG
-\item Spacy for NER; for LLM they use GPT-3 and ChatGPT
-\item Downstream test on pseudoanonym. data -> summarization (CNN daily mail, standard) and classification (IMDB, standard)
-\item Results: on summarization drop in BLEU (quite a big one), on sentiment very little (why?)
-\end{itemize}
+Alice did take drugs
 
+$Y \sim  \frac{1}{2} \exp \left(- \abs{x - 23} \right) \qquad
+Y' \sim \frac{1}{2} \exp \left(- \abs{x - 22} \right)$
 
-\begin{tikzpicture}[overlay, remember picture]
-\node at (current page.north east)[ref] {
-\fullcite{Yermilov.et.al.2023.TrustWS} \par};
-\end{tikzpicture}
+-- our general proof still holds!
+$
+\frac{\Pr[Y = x]}{\Pr[Y' = x]} \leq \exp(1) \qquad
+\frac{\Pr[Y' = x]}{\Pr[Y = x]} \leq \exp(1)
+$
+
+%\begin{tikzpicture}[overlay, remember picture]
+%\node at (current page.north east)[ref] {
+%\fullcite{Voigt.Bussche.2017} \par};
+%\end{tikzpicture}
 \end{frame}
 
 
-\begin{frame}{Case study: TAB Project}
+\begin{frame}{Summary}
 
-1,268 En cases from ECHR (Introduction and Facts sections)
+Four counting queries, the maximum difference of the query result is 1 (when a particular person is not in the dataset)
 
-\includegraphics[width=0.9\linewidth]{img/tab1}
+We used scale $b = 1$ for the Laplace distribution, which gives us upper bound on privacy loss
 
-\begin{tikzpicture}[overlay, remember picture]
-\node at (current page.north east)[ref] {
-\fullcite{Pilan.et.al.2022.coli} \par};
-\end{tikzpicture}
-\end{frame}
+$
+\frac{\Pr[Y = x]}{\Pr[Y' = x]} \leq \exp(1) \qquad
+\frac{\Pr[Y' = x]}{\Pr[Y = x]} \leq \exp(1)
+$
 
-
-\begin{frame}{Case study: TAB Project}
-
-\includegraphics[width=\linewidth]{img/tab2}
-
-\begin{tikzpicture}[overlay, remember picture]
-\node at (current page.north east)[ref] {
-\fullcite{Pilan.et.al.2022.coli} \par};
-\end{tikzpicture}
-\end{frame}
-
-
-\begin{frame}{Case study: TAB Project --- Evaluation}
-
-Evaluation - recall of PII = privacy protection, precision of PII = utility
-
-Absolute recall --- relies on a uniform weight over all annotated identifiers and thus fails to account for the fact that some (quasi-)identifiers have a much larger influence on the disclosure risk than others
-
-Evaluation of anonymization methods is the need to compute the recall at the level of entities rather than mentions. Whenever an entity is mentioned several times in a given document, it only makes sense to view this entity as “protected” if all of its mentions are masked.
-
-\begin{tikzpicture}[overlay, remember picture]
-\node at (current page.north east)[ref] {
-\fullcite{Pilan.et.al.2022.coli} \par};
-\end{tikzpicture}
-\end{frame}
-
-
-\begin{frame}{Case study: TAB Project --- New metrics}
-
-\includegraphics[width=0.7\linewidth]{img/tab3}
-
-Entity is correctly masked if and only if the anonymization model manages to completely mask all of its mentions
-
-Separate recall measures for the direct id (person’s names, case numbers, etc.) and the quasi-id (dates, locations, etc.)
-
-\begin{tikzpicture}[overlay, remember picture]
-\node at (current page.north east)[ref] {
-\fullcite{Pilan.et.al.2022.coli} \par};
-\end{tikzpicture}
-\end{frame}
-
-\section{Discussion}
-
-\begin{frame}{Presidio}
-
-\includegraphics[width=0.35\linewidth]{img/presidio-out}
-\pause
-\includegraphics[width=0.35\linewidth]{img/presidio-in}
-
-\end{frame}
-
-
-
-\begin{frame}{Limits of anonymization?}
-\includegraphics[width=0.95\linewidth]{img/hagen2}
-\end{frame}
-
-
-\begin{frame}{Attacks on anonymized documents}
-
-Explored reconstructing Swiss court decisions (cases from the federal court)
-
-
-Auxiliary data: Created a dataset by manually linking court rulings and newspaper articles using keywords, e.g., ``4A\_375/2021", "10 years in prison", etc.
-
-\includegraphics[width=0.7\linewidth]{img/swiss.jpg}
-
-
-
-\begin{tikzpicture}[overlay, remember picture]
-\node at (current page.north east)[ref] {
-\fullcite{Nyffenegger.et.al.2024.FindingsNAACL} \par};
-\end{tikzpicture}
-
-\end{frame}
-
-
-
-\begin{frame}{Exercise}
-Build your own text anonymizer
-\begin{itemize}
-\item Get existing dataset (see the case studies)
-\item Fine-tune a small BERT transformer model (or RNN tagger)
-\item Evaluate quantitatively and explore errors manually
-\end{itemize}
+%\begin{tikzpicture}[overlay, remember picture]
+%\node at (current page.north east)[ref] {
+%\fullcite{Voigt.Bussche.2017} \par};
+%\end{tikzpicture}
 \end{frame}
 
 
@@ -478,7 +862,6 @@ Build your own text anonymizer
 	\end{scriptsize}
 	
 \end{frame}
-
 
 
 
