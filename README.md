@@ -10,6 +10,8 @@ Lecture 01 - Introduction (what is privacy, when things go wrong)
 
 Lecture 02 - Text anonymization
 
+Lecture 03 - Towards differential privacy
+
 ## Exercises
 
 Exercise 01 - in person, refresher on probability theory (and homeworks on simple proofs for Laplace tail bounds and negative triangle inequality)
