@@ -12,6 +12,8 @@ Lecture 02 - Text anonymization
 
 Lecture 03 - Towards differential privacy
 
+Lecture 04 - Pure differential privacy mechanisms
+
 ## Exercises
 
 Exercise 01 - in person, refresher on probability theory (and homeworks on simple proofs for Laplace tail bounds and negative triangle inequality)
