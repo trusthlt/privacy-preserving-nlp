@@ -21,8 +21,8 @@
 
 
 \title{Privacy-Preserving Natural Language Processing}
-\subtitle{Lecture 3 -- Introduction to Differential Privacy}
-\date{April 24, 2025}
+\subtitle{Lecture 4 -- Pure Differential Privacy Mechanisms}
+\date{May 8, 2025}
 \author{Prof.\ Dr.\ Ivan Habernal}
 \institute{
 \texttt{www.trusthlt.org} \\
@@ -34,27 +34,13 @@ Ruhr University Bochum \& Research Center Trustworthy Data Science and Security}
 \maketitle
 
 
-\section{Intro}
-
-\begin{frame}{Overview}
-
-Last lecture: Towards probabilistic approach to privacy
-
-This lecture: Formalizing differential privacy, introducing some basic algorithms
-
-%\begin{tikzpicture}[overlay, remember picture]
-%\node at (current page.north east)[ref] {
-%\fullcite{Voigt.Bussche.2017} \par};
-%\end{tikzpicture}
-\end{frame}
-
 
 \section{Recap Lecture 3}
 
 \begin{frame}{Example: How many persons in the database take illegal drugs?}
 
 \begin{table}
-\footnotesize
+\scriptsize
 \begin{tabular}{lrrr} \toprule
 Name & Hospitalized in year & Age & Illegal drug use \\ \midrule
 Alice & 2024 & 32 & yes \\
@@ -65,7 +51,7 @@ Xander & 2020 & 31 & yes \\ \bottomrule
 \end{tabular}
 \end{table}
 
-What might be public information: the size of the dataset (say $n = 100$)
+Public information: the size of the dataset (say $n = 100$)
 
 The true answer to the query: 2
 
@@ -170,7 +156,7 @@ The bound holds for any two datasets that \textbf{differ in the presence of one 
 
 Databases 1 and 2 from the previous slide are \textbf{neighboring} as they differ in presence or absence of a single row
 
-We might denote them 1: $D$ and 2: $D'$ but this is an \textbf{arbitrary choice}
+We denote them 1: $D$ and 2: $D'$ \textbf{(an arbitrary choice)}
 
 The neighboring dataset definition allows us to simplify
 $$
@@ -202,7 +188,7 @@ So the absence or presence of \textbf{any single individual}
 
 \section{Controlling privacy strength}
 
-\begin{frame}{What if $\exp(1)$ is not strong enough?}
+\begin{frame}{What if 2.718 is not strong enough?}
 
 For $y \sim y_{\mathrm{true}} + \textrm{Lap}(b=1)$
 
@@ -233,11 +219,9 @@ For $y \sim y_{\mathrm{true}} + \textrm{Lap}(\mu = 0; b=1)$
 
 \begin{figure}
 \includegraphics[width=0.6\linewidth]{img/laplace-distributions.pdf}
-\caption{Laplace PDF (probability density function)}
+\caption{Laplace PDF $\textrm{Lap}(x; \mu, b) = \frac{1}{2b} \exp \left( - \frac{\abs{x - \mu}}{b}  \right)$
+}
 \end{figure}
-$
-\textrm{Lap}(x; \mu, b) = \frac{1}{2b} \exp \left( - \frac{\abs{x - \mu}}{b}  \right)
-$
 
 What to do with the scale for stronger privacy?
 	
@@ -258,7 +242,8 @@ What to do with the scale for stronger privacy?
 Recall: likelihood of any output (x-axis) coming from $D'$ as opposed do $D$ (and vice versa)
 
 \begin{figure}
-\includegraphics[width=0.9\linewidth]{img/privacy-loss1.pdf}
+\centering
+\includegraphics[width=0.8\linewidth]{img/privacy-loss1.pdf}
 \caption{Privacy loss for two Laplace distributions for a counting query, varying scale $b$}
 \end{figure}
 
@@ -267,6 +252,7 @@ Recall: likelihood of any output (x-axis) coming from $D'$ as opposed do $D$ (an
 
 
 \begin{frame}{Let's try to formalize our intuition}
+\label{slide:proof.reference}
 
 Counting query true value $y= 51$, one person removed $y = 50$
 $$
@@ -283,30 +269,12 @@ $$
 &= \exp (\frac{1}{b} \abs{1}) = \exp(\frac{1}{b}) \\
 \end{aligned}
 $$
-Will be the same for $\frac{\Pr[Y' = y]}{\Pr[Y = y]}$ (prove it!)
+Will be the same for $\frac{\Pr[Y' = y]}{\Pr[Y = y]}$ (prove it! check the appendix)
 
 \end{frame}
 
 
 
-\begin{frame}{Proof from the previous slide (added post-lectures 2024-07-15)}
-
-$$
-\begin{aligned}
-\frac{\Pr[Y' = y]}{\Pr[Y = y]} =
-\frac{
-\frac{1}{2b} \exp \left(- \frac{1}{b} \abs{y - 50} \right)
-}{
-\frac{1}{2b} \exp \left(- \frac{1}{b} \abs{y - 51} \right)
-}
-&= \exp (\frac{1}{b} \abs{y - 51} - \abs{y - 50} ) \\
-&\leq \exp (\frac{1}{b} \abs{(y - 51) - (y - 50)} ) \\
-&= \exp (\frac{1}{b} \abs{y - 51 - y + 50} ) \\
-&= \exp (\frac{1}{b} \abs{-1}) = \exp(\frac{1}{b}) \\
-\end{aligned}
-$$
-
-\end{frame}
 
 
 
@@ -342,7 +310,7 @@ We saw, that $\frac{1}{b}$ controls the strength of privacy. Let's generalize th
 \begin{block}{Privacy budget}
 Denoted as $\varepsilon \in [0, \infty)$
 
-$\varepsilon = 0$ is complete privacy but everything would be completely random
+$\varepsilon = 0$ is complete privacy but completely random
 
 $\varepsilon = \infty$ is no privacy whatsoever
 \end{block}
@@ -400,8 +368,7 @@ $$
 \end{frame}
 
 
-\section{Examples of $(\varepsilon, 0)$-DP mechanisms}
-
+\section{Laplace mechanism}
 
 \begin{frame}{Laplace mechanism for counting query is $(\varepsilon, 0)$-DP}
 
@@ -422,7 +389,7 @@ Proof: We did it already! (but practice it now backwards from the definition)
 \end{frame}
 
 
-\section{General numeric queries}
+\subsection{General numeric queries}
 
 \begin{frame}{From counting query to numeric query}
 
@@ -542,153 +509,8 @@ This naive solution violates DP! How to fix this?
 \end{frame}
 
 
-\section{Where we finished last time}
 
-
-\begin{frame}{Recall: $(\varepsilon, 0)$ differential privacy (aka.\ pure DP)}
-
-A randomized algorithm (mechanism) $\mathcal{M}$ is $(\varepsilon, 0)$-\textbf{differentially private} if for any two neighboring datasets $D, D'$ and any output $\mathcal{Y} \subseteq \mathcal{Z}$ this guarantee holds:
-$$
-\Pr[\mathcal{M}(D) \in \mathcal{Y}] \leq \exp(\varepsilon) \Pr[\mathcal{M}(D') \in \mathcal{Y}]
-$$
-
-\begin{tikzpicture}[overlay, remember picture]
-\node at (current page.north east)[ref] {
-\fullcite[Definition~2.4]{Dwork.Roth.2013} \par};
-\end{tikzpicture}
-
-\end{frame}
-
-
-\begin{frame}{Recap: From counting query to numeric query}
-
-Counting query: Report a number of persons with certain attribute(s)
-$$
-f: \mathcal{X} \mapsto \mathcal{Y} \subseteq \mathbb{N}
-$$
-
-Real-valued query: Report any value computed over certain attribute(s)
-$$
-f: \mathcal{X} \mapsto \mathcal{Y} \subseteq \mathbb{R}
-$$
-
-\end{frame}
-
-\begin{frame}{Recap: Working example of numeric query}
-
-\begin{table}
-\footnotesize
-\begin{tabular}{lr} \toprule
-Name & Debt (in \texteuro) \\ \midrule
-Alice & 2,800,798.00 \\
-Bob & 7,000.00 \\
-Charlie & 1.56 \\
-Xander & 0.00 \\
-\bottomrule
-\end{tabular}
-\caption{Debts of account holders in a bank}
-\end{table}
-
-Important constraint: Maximum debt the bank offers per person is 10,000,000 \texteuro
-
-
-Query: What is the total debt in \texteuro?
-
-\end{frame}
-
-
-
-\begin{frame}{Recap: Naive attempt using the Laplace mechanism for counting queries}
-
-\begin{block}{This approach failed}
-Draw $y_{\mathrm{lap}} \sim \textrm{Lap}(\mu = 0; b=\frac{1}{\varepsilon})$ and report $y = y_{\mathrm{true}} + y_{\mathrm{lap}}$
-\end{block}
-
-Will it ensure $\Pr[\mathcal{M}(D) \in \mathcal{Y}] \leq \exp(\varepsilon) \Pr[\mathcal{M}(D') \in \mathcal{Y}]$ for all neighboring datasets and any outputs?
-
-\begin{table}
-\footnotesize
-\begin{tabular}{lr} \toprule
-Name & Debt (in \texteuro) \\ \midrule
-Alice & 2,800,798.00 \\
-Bob & 7,000.00 \\
-Charlie & 1.56 \\
-Xander & 0.00 \\
-\bottomrule
-\end{tabular}
-\end{table}
-
-\end{frame}
-
-
-
-\begin{frame}{Recap: Naive attempt with the Laplace mechanism for counting queries}
-
-\begin{table}
-\footnotesize
-\begin{tabular}{lr} \toprule
-Name & Debt (in \texteuro) \\ \midrule
-Alice & 2,800,798.00 \\
-Bob & 7,000.00 \\
-Charlie & 1.56 \\
-Xander & 0.00 \\
-\bottomrule
-\end{tabular}
-\end{table}
-
-Let's try for $D = \{A, B, C, X\}$ and $D' = \{B, C, X\}$
-
-\begin{itemize}
-\item $y_{\mathrm{true}}(D) = 2,807,799.56$
-\item $y_{\mathrm{true}}(D') = 7,001.56$
-\end{itemize}
-
-\end{frame}
-
-
-
-\begin{frame}{Recap: Naive solution with the Laplace mechanism for counting queries}
-
-We had $y_{\mathrm{true}}(D) = 2,807,799.56$, $y_{\mathrm{true}}(D') = 7,001.56$
-
-$$
-\begin{aligned}
-\frac{\Pr[Y = y]}{\Pr[Y' = y]} &=
-\frac{
-\frac{1}{2\frac{1}{\varepsilon}} \exp \left(- \frac{1}{\frac{1}{\varepsilon}} \abs{y - 2,807,799.56} \right)
-}{
-\frac{1}{2\frac{1}{\varepsilon}} \exp \left(- \frac{1}{\frac{1}{\varepsilon}} \abs{y - 7,001.56} \right) 
-}
-=
-\frac{
-\exp \left(- \varepsilon \abs{y - 2,807,799.56} \right)
-}{
-\exp \left(- \varepsilon \abs{y - 7,001.56} \right) 
-} \\
-&=
-\exp \left\{ \varepsilon
-\underbrace{
-\left( \abs{y - 7,001.56} - \abs{y - 2,807,799.56} \right)
-}_{\text{Exceeds 1 for some large } y}
-\right\} \\
-& \nleq \exp(\varepsilon) \\
-\end{aligned}
-$$
-This naive solution violates DP! How to fix this?
-\end{frame}
-
-
-%\section{Today}
-%\begin{frame}{Outline}
-%Fixing numeric query -- Introducing global L1 sensitivity
-%The Laplace mechanism for numeric queries (including general proof)
-%(?) Utility/error of Laplace mechanism?
-%(?) Applications of Laplace mechanisms in NLP
-%Exponential mechanism (including general proof)
-%\end{frame}
-
-
-\section{Global $\ell_1$ sensitivity}
+\subsection{Global $\ell_1$ sensitivity}
 
 \begin{frame}{How different neighboring datasets influence the output}
 \begin{table}
@@ -740,7 +562,7 @@ You should now see the pattern for this sum query
 
 \begin{frame}{How different neighboring datasets influence the output}
 \begin{table}
-\footnotesize
+\scriptsize
 \begin{tabular}{lr} \toprule
 Name & Debt (in \texteuro) \\ \midrule
 Alice & 2,800,798.00 \\
@@ -766,6 +588,7 @@ Can we use this max value to fix our problem?
 \begin{frame}{Rescale the Laplace distribution}
 
 \begin{block}{Previous attempt}
+\begin{small}
 We had $y_{\mathrm{true}}(D) = 2,807,799.56$, $y_{\mathrm{true}}(D') = 7,001.56$
 $$
 \begin{aligned}
@@ -777,13 +600,12 @@ $$
 } \\
 &=
 \exp \left\{ \varepsilon
-\underbrace{
 \left( \abs{y - 7,001.56} - \abs{y - 2,807,799.56} \right)
-}_{\text{Exceeds 1 for some large } y}
 \right\} \\
 & \nleq \exp(\varepsilon) \\
 \end{aligned}
 $$
+\end{small}
 \end{block}
 How to make the term $\leq 1$?
 \end{frame}
@@ -800,6 +622,7 @@ $$
 $a, b \in \mathbb{R}$:
 $\abs{a} - \abs{b} \leq \abs{a- b}$
 \end{block}
+\vspace{-1em}
 $$
 \begin{aligned}
 \abs{y - 7,001.56} - \abs{y - 2,807,799.56} &\leq \abs{(y - 7,001.56) - (y - 2,807,799.56)} \\
@@ -904,14 +727,13 @@ $$
 & \nleq \exp(\varepsilon) \\
 \end{aligned}
 $$
-How would we fix that easily?
 \end{frame}
 
 
 
 \begin{frame}{Introducing global $\ell_1$ sensitivity}
 
-Remember: we said the max debt per person is 10,000,000 \texteuro
+Remember: we said the max debt/person = 10,000,000 \texteuro
 
 We also saw that
 \begin{itemize}
@@ -982,8 +804,7 @@ $$
 \left( \abs{y - 10,000,000} - \abs{y - 0} \right)
 }{\Delta}
 }_{\text{Always} \leq 1}
-\right\} \\
-& \leq \exp(\varepsilon) \\
+\right\}  \leq \exp(\varepsilon) \\
 \end{aligned}
 $$
 Will work for all $D, D'$!
@@ -1005,7 +826,7 @@ Formal proof? We have all building blocks $\rightarrow$ homework! (or during exe
 \end{frame}
 
 
-\section{Multi-dimensional numerical queries}
+\subsection{Multi-dimensional numeric queries}
 
 \begin{frame}{Numerical query function might be $\mathcal{X} \mapsto \mathbb{R}^k$}
 
@@ -1051,7 +872,7 @@ Formal proof? Very similar as before but now use the above fact of independence 
 \begin{frame}{Motivation}
 
 \begin{table}
-\footnotesize
+\scriptsize
 \begin{tabular}{ll}
 \toprule
 Person & City \\ \midrule
@@ -1071,7 +892,7 @@ All cities $C$ = \{Ottawa, Toronto, New York, Washington, Memphis, Los Angeles, 
 
 \begin{frame}{Motivation}
 \begin{figure}
-\includegraphics[width=0.9\linewidth]{img/osm1.png}
+\includegraphics[width=0.8\linewidth]{img/osm1.png}
 \end{figure}
 City closest to the mean GPS coordinates -- does it protect privacy of the members?
 \end{frame}
@@ -1081,7 +902,7 @@ City closest to the mean GPS coordinates -- does it protect privacy of the membe
 All cities $C$ = \{Ottawa (45, -75), Toronto, New York, Washington, Memphis (35, -90), Los Angeles, La Habana (23, -82)\}
 
 \begin{table}
-\footnotesize
+\scriptsize
 \begin{tabular}{llc}
 \toprule
 Person & City & (Latitude, Longitude)\\ \midrule
@@ -1101,7 +922,7 @@ Mean = 36, -88, closest city = Memphis (35, -90)
 \begin{frame}{Example more concretely}
 
 \begin{figure}
-\includegraphics[width=0.9\linewidth]{img/osm2.png}
+\includegraphics[width=0.8\linewidth]{img/osm2.png}
 \end{figure}
 Mean = 36, -88, closest city = Memphis (35, -90)
 
@@ -1109,7 +930,7 @@ Mean = 36, -88, closest city = Memphis (35, -90)
 
 \begin{frame}{Let's define a utility function}
 
-Based on: Distance (Euclidian) of the database's $D$ GPS mean to a known city $c$ GPS
+Based on: Distance (Euclid) of the database's $D$ GPS mean to a known city $c$ GPS
 $$d(D, c)$$
 (the smaller, the closer = better answer)
 
@@ -1132,7 +953,7 @@ What happens for a neighboring dataset $D'$?
 \end{frame}
 
 
-\begin{frame}{Does our utitily function have sensitivity?}
+\begin{frame}{Does our utility function have sensitivity?}
 Utility formally: for a database and a range
 $$
 u: \mathcal{X} \times \mathcal{R} \to \mathbb{R}
@@ -1202,6 +1023,27 @@ Exercise: Proof that this is $(\varepsilon, 0)$-DP
 	
 	\end{scriptsize}
 	
+\end{frame}
+
+
+
+\begin{frame}{Appendix: Proof for slide \ref{slide:proof.reference}}
+
+$$
+\begin{aligned}
+\frac{\Pr[Y' = y]}{\Pr[Y = y]} =
+\frac{
+\frac{1}{2b} \exp \left(- \frac{1}{b} \abs{y - 50} \right)
+}{
+\frac{1}{2b} \exp \left(- \frac{1}{b} \abs{y - 51} \right)
+}
+&= \exp (\frac{1}{b} \abs{y - 51} - \abs{y - 50} ) \\
+&\leq \exp (\frac{1}{b} \abs{(y - 51) - (y - 50)} ) \\
+&= \exp (\frac{1}{b} \abs{y - 51 - y + 50} ) \\
+&= \exp (\frac{1}{b} \abs{-1}) = \exp(\frac{1}{b}) \\
+\end{aligned}
+$$
+
 \end{frame}
 
 
