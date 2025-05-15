@@ -99,11 +99,12 @@ $\Pr(Y = k)=p^{k}(1-\theta)^{1-k}$
 
 \begin{frame}{Motivation}
 
-The notion of neighboring datasets revisited
-
--- size 1, replacing one person
-
+\begin{block}{The notion of neighboring datasets, revisited}
+Database of size 1, replacing one person
+\end{block}
 Can we ask numeric queries on database of size 1?
+
+\pause
 
 Sure!
 
@@ -125,10 +126,12 @@ It comes with extra price (to be discussed later)
 
 \end{frame}
 
-
+\begin{frame}{Simplifying queries}
 Now we know that we can privately (DP) answer statistical queries without a trusted curator
 
 Let's simplify our example even more
+
+\end{frame}
 
 
 \begin{frame}{Reporting single bit}
@@ -161,9 +164,8 @@ Something between these two extremes
 
 
 
-\begin{frame}{How to report a single bit}
+\begin{frame}{How to report a single bit: From true value to reported value}
 
-From true value to reported value
 
 Idea: Report the true value with some probability, `flip' and report otherwise
 
@@ -183,24 +185,20 @@ Again: Use a randomized algorithm!
 
 \begin{frame}{How to parametrize this Bernoulli distribution?}
 
-\begin{itemize}
-\item Step 1: Draw a random value, either 0 or 1, from a Bernoulli distribution
-\item Step 2: If 1, report true value, if 0 report flipped value
-\end{itemize}
+Step 1: Draw 0 or 1 from $\mathrm{Ber}(\theta)$, Step 2: If 1, report true value, if 0 report flipped value
 
 What $\theta$ would we need for modeling the extremes? (by the way: $\theta$ is publicly known! No `security through obscurity'!)
 
-Extreme 1: \emph{Just report the true value}
-
+\begin{block}{Extreme 1: \emph{Just report the true value}}
 \pause
+$\mathrm{Ber}(\theta = 1)$ always true value (no privacy)
+\end{block}
 
-$\mathrm{Ber}(\theta = 1)$ always returns 1 $\rightarrow$ always true value (no privacy)
-
-Extreme 2: \emph{Completely random answer}
-
+\begin{block}{Extreme 2: \emph{Completely random answer}}
 \pause
 
 $\mathrm{Ber}(\theta = 0.5)$ completely random $\rightarrow$ no matter what the raw value is, this is equivalent to reporting a random value
+\end{block}
 
 %\pause
 %Wrong answer:
@@ -355,7 +353,7 @@ but also with a polynom of degree two
 $\exp(\varepsilon) \geq 1 + \varepsilon + \frac{\varepsilon^2}{2}$
 
 We get equality with the very definition of using power series
-$$\exp(\varepsilon) := \sum_{k = 0}^{\infty} \frac{x^k}{k!}$$
+$\exp(\varepsilon) := \sum_{k = 0}^{\infty} \frac{x^k}{k!}$
 \end{frame}
 
 
@@ -475,7 +473,7 @@ Recap our algorithm:
 \item Step 2: If 1, report true value, if 0 report flipped value
 \end{itemize}
 
-We found that $\theta = \frac{\exp(\varepsilon)}{\exp(\varepsilon) + 1} = \frac{1}{1 + \exp(- \varepsilon)}$ makes our algorithm $(\varepsilon, 0)$-DP
+We found $\theta = \frac{\exp(\varepsilon)}{\exp(\varepsilon) + 1} = \frac{1}{1 + \exp(- \varepsilon)}$ makes it $(\varepsilon, 0)$-DP
 
 
 \end{frame}
@@ -510,6 +508,12 @@ Parametrize Bernoulli with $\theta = \frac{\exp(\varepsilon)}{\exp(\varepsilon) 
 
 Homework: Prove that Randomized response is $(\varepsilon, 0)$-DP (just do what we did for any pair of $D, D', y$)
 
+
+\end{frame}
+
+
+
+\begin{frame}{Local DP in NLP (discussion)}
 
 \end{frame}
 

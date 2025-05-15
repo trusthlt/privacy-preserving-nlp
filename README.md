@@ -14,6 +14,8 @@ Lecture 03 - Towards differential privacy
 
 Lecture 04 - Pure differential privacy mechanisms
 
+Lecture 05 - Local differential privacy and randomized response
+
 ## Exercises
 
 Exercise 01 - in person, refresher on probability theory (and homeworks on simple proofs for Laplace tail bounds and negative triangle inequality)
