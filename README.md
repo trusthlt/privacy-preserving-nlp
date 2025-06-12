@@ -16,6 +16,12 @@ Lecture 04 - Pure differential privacy mechanisms
 
 Lecture 05 - Local differential privacy and randomized response
 
+Lecture 06 - Approximate Differential Privacy and Gaussian Mechanism
+
+Lecture 07 - Differentially-Private Stochastic Gradient Descent
+
+
+
 ## Exercises
 
 Exercise 01 - in person, refresher on probability theory (and homeworks on simple proofs for Laplace tail bounds and negative triangle inequality)
