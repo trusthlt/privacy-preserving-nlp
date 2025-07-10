@@ -20,6 +20,9 @@ Lecture 06 - Approximate Differential Privacy and Gaussian Mechanism
 
 Lecture 07 - Differentially-Private Stochastic Gradient Descent
 
+Lecture 08 - Privacy-Preserving Natural Language Processing
+
+Lecture 09 - Attacks on LLMS
 
 
 ## Exercises
