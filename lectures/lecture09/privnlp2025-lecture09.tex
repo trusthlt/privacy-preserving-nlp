@@ -1,13 +1,13 @@
-% !TeX document-id = {630db241-5931-433b-84ee-b33b43cbf0d4}
 % !TeX program = lualatex
 % !BIB program = biber
 % Lualatex is important to render TTF fonts; with pdflatex it's just the regular one
 % ratio 16:9 -- https://tex.stackexchange.com/questions/14336/
 
+% compile two versions, inspired by https://tex.stackexchange.com/a/1501
+% use the script "compile-pdf.sh"
 \newif\ifhandout
-% uncomment/comment one the next lines to compile a handout version (without pauses)
-%\handouttrue
-\handoutfalse
+% if flags.tex does not exist, create an empty file to be able to compile in TeXstudio
+\input{flags}
 
 \ifhandout
 \documentclass[12pt,aspectratio=169,handout]{beamer}
@@ -15,145 +15,8 @@
 \documentclass[12pt,aspectratio=169]{beamer}
 \fi
 
-% TODO change "leftfootertext" to your liking
-\newcommand{\leftfootertext}{\inserttitle}  % just the \title{} text by default
-%\newcommand{\leftfootertext}{AI is all you need | Dr.\ Maria Mustermann}  % Your name, for instance
 
-
-% ------- RUB specifics ----------
-% adjust for 16:9
-% https://tex.stackexchange.com/questions/354022/modifying-the-margins-of-all-slides-in-beamer
-\setbeamersize{text margin left=0.3cm,text margin right=4.5cm} 
-
-
-% use Metropolis as the basis theme
-\usetheme[subsectionpage=progressbar]{metropolis}
-% blocks with background globally
-\metroset{block=fill}
-
-
-\usepackage{fontspec}
-% RUB fonts need to be installed
-% 'UprightFont = * Light' makes sure that the base font is RubFlama Light, which looks
-% lighter than RubFlama Regular (would be too thick for slides)
-% \setsansfont[Scale=MatchLowercase, UprightFont = * Light, BoldFont = * Bold]{RubFlama}
-%\setsansfont{Arial} % Open source alternative if you don't have RubFlama
-
-\setsansfont[Scale=MatchLowercase, UprightFont = RubFlamaLight-Regular.ttf, BoldFont = RubFlama-Bold.ttf]{RubFlama}
-
-%\pdfmapfile{RubFlama-Bold}
-
-% RUB color scheme
-% Dark blue: 0; 53; 96; #003560
-\definecolor{RUBDarkBlue}{RGB}{0, 53, 96}
-
-% Light yellow (table fill, etc.); 238; 250; 196; #EEFAC4
-\definecolor{RUBLightYellow}{RGB}{238, 250, 196}
-
-%Light green: 141; 174; 16
-\definecolor{RUBLightGreen}{RGB}{141, 174, 16}
-
-
-\setbeamercolor{titlelike}{fg=RUBDarkBlue}
-\setbeamercolor{subtitle}{fg=RUBLightGreen}
-\setbeamercolor{separation line}{fg=RUBLightGreen}
-\setbeamercolor{frametitle}{bg=white, fg=RUBDarkBlue}
-
-% horizontal line on title page and sections
-\setbeamercolor{alerted text}{fg=RUBLightGreen}
-
-
-% Adjust footer bottom (too large by default)
-\setbeamertemplate{footline}{%
-  \begin{beamercolorbox}[wd=\textwidth, sep=2ex]{footline}%
-    \usebeamerfont{page number in head/foot}%
-    \usebeamertemplate*{frame footer}
-    \hfill%
-    \usebeamertemplate*{frame numbering}
-  \end{beamercolorbox}%
-}
-
-
-% Lab name, numbering, etc. in footer
-%\setbeamertemplate{frame numbering}{TrustHLT --- Prof. Dr.\ Ivan Habernal
-\setbeamertemplate{frame numbering}{\insertauthor~ --- TrustHLT \hspace*{1ex} \includegraphics[width=7em]{img/rub-logo.pdf}\hspace*{1ex}}
-
-\setbeamertemplate{frame footer}{\hspace*{1ex}\insertframenumber \hspace*{2ex} \leftfootertext}
-
-% adjust the background to be completely white
-\setbeamercolor{background canvas}{bg=white}
-
-% logos on the title page
-\titlegraphic{%
-	\begin{picture}(0,0)
-		\put(435,0){\makebox(0,0)[rt]{\includegraphics[width=7em]{img/rub-logo.pdf}}}
-		\put(435,-170){\makebox(0,0)[rt]{\includegraphics[width=4em]{img/logo-trusthlt.pdf}}}
-		\put(435,-196){\makebox(0,0)[rt]{\includegraphics[width=9em]{img/logo-rctrust.pdf}}}
-	\end{picture}%
-}
-
-
-% show TOC at every section start
-\AtBeginSection{
-	\frame{
-		\vspace{2em}
-		\sectionpage
-		\hspace*{2.2em}\begin{minipage}{10cm}
-			\tableofcontents[currentsection]
-		\end{minipage}
-	}
-}
-
-% bullet points: rectangles
-\useinnertheme{rectangles}
-\setbeamercolor{itemize item}{fg=RUBLightGreen}
-\setbeamercolor{itemize subitem}{fg=RUBLightGreen}
-% enumerate: blue background for better readability
-\setbeamercolor{item projected}{bg=RUBDarkBlue}
-
-% make boxes (example, block, etc.) background lighter for readability
-\setbeamercolor{block title}{%
-	use=normal text,
-	fg=normal text.fg,
-	bg=normal text.bg!90!fg % lighter background in block title
-}
-\setbeamercolor{block body}{
-	use={block title, normal text},
-	bg=block title.bg!30!normal text.bg % lighter background in block body
-}
-
-
-% RUB colors in blocks
-\setbeamercolor{block title alerted}{%
-	use={block title, alerted text},
-	bg=RUBDarkBlue,
-	%fg=RUBLightYellow % looks bad
-	fg=white % better contrast
-}
-
-\setbeamercolor{block title example}{%
-	use={block title, example text},
-	fg=RUBLightGreen
-}
-
-
-% ------- end of RUB specifics ----------
-
-
-% better bibliography using biber as backend
-\usepackage[natbib=true,backend=biber,style=authoryear-icomp,maxbibnames=30,maxcitenames=9,uniquelist=false,giveninits=true,doi=false,url=false,dashed=false,isbn=false]{biblatex}
-% shared bibliography
-\addbibresource{bibliography.bib}
-% disable "ibid" for repeated citations
-\boolfalse{citetracker}
-
-
-% tikz for positioning citations
-\usepackage{tikz}
-% style for citation nodes right top
-\tikzset{
-	ref/.style={anchor = north east, text width=7.8cm, yshift=-1.3cm, xshift=-0.2cm, scale=0.5},
-}
+\input{header-include.tex}
 
 
 \title{Attacks on LLMS}
