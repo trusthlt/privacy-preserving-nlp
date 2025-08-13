@@ -1,0 +1,506 @@
+% !TeX document-id = {e2312f8c-b2d9-4f5f-a6e9-54d5ee345192}
+% !TeX program = lualatex
+% !BIB program = biber
+% Lualatex is important to render TTF fonts; with pdflatex it's just the regular one
+% ratio 16:9 -- https://tex.stackexchange.com/questions/14336/
+
+% compile two versions, inspired by https://tex.stackexchange.com/a/1501
+% use the script "compile-pdf.sh"
+\newif\ifhandout
+% if flags.tex does not exist, create an empty file to be able to compile in TeXstudio
+\input{flags}
+
+\ifhandout
+\documentclass[12pt,aspectratio=169,handout]{beamer}
+\else
+\documentclass[12pt,aspectratio=169]{beamer}
+\fi
+
+\input{header-include.tex}
+
+
+\title{Privacy-Preserving Natural Language Processing}
+\subtitle{Lecture 10 : Real-World DP Application and the Epsilon Registry}
+\date{July 17, 2025}
+\author{Dr.\ Erion {\c C}ano}
+\institute{
+\texttt{www.trusthlt.org} \\
+Chair of Trustworthy Human Language Technologies (TrustHLT) \\
+Ruhr University Bochum \& Research Center Trustworthy Data Science and Security}
+
+\begin{document}
+
+
+\maketitle
+
+
+\section{Tech Giants Applying DP}
+
+%-----------------------------------------------------------------------
+
+\begin{frame}{Apple User Data from macOS and iOS}
+
+Tons of user data being collected by Apple:
+
+\begin{itemize} \setlength\itemsep{2mm}
+%
+\item Typing information for QuickType suggestions
+%
+\item Emojis for emoji suggestions
+%
+\item Web navigation data from Safari
+%
+\end{itemize}
+
+Apple uses local DP with different $\varepsilon$ values to protect user privacy in those data. \vskip1mm
+
+Full details are reported {\it \href{https://docs-assets.developer.apple.com/ml-research/papers/learning-with-privacy-at-scale.pdf}{here}}.
+
+\end{frame}
+
+%-----------------------------------------------------------------------
+
+\begin{frame}{Meta and Facebook User Interactions}
+
+Dataset of user interactions with web pages shared on FB is publicly available. \vskip1mm
+
+Examples: \vskip1mm 
+
+\begin{itemize} \setlength\itemsep{2mm}
+%
+\item John shared URL foo
+%
+\item Mary views post with URL bar
+%
+\end{itemize}
+
+Meta uses $(\varepsilon,\delta)$ DP to protect each interaction.
+
+\begin{tikzpicture}[overlay, remember picture]
+\node at (current page.north east)[ref] {
+\fullcite{DVN/TDOAPG_2020} \par};
+\end{tikzpicture}
+
+\end{frame}
+
+%-----------------------------------------------------------------------
+
+\begin{frame}{Microsoft and Windows Telemetry}
+
+User data collections starting (massively) with Windows 10. \vskip1mm
+
+Examples: \vskip1mm 
+
+\begin{itemize} \setlength\itemsep{2mm}
+%
+\item Application crash reports. 
+%
+\item User time spent on certain apps.
+%
+\item Typing, location, connected devices, etc. 
+%
+\end{itemize}
+
+Microsoft uses local DP with $\varepsilon = 1.67$ to protect it before using / sharing / selling.
+
+\begin{tikzpicture}[overlay, remember picture]
+\node at (current page.north east)[ref] {
+\fullcite{ding2017collecting} \par};
+\end{tikzpicture}
+
+\end{frame}
+
+%-----------------------------------------------------------------------
+
+\begin{frame}{Google Shopping and Trends}
+
+Product page view counts for prioritizing page crawing. 
+
+\begin{itemize} \setlength\itemsep{2mm}
+%
+\item Collected from users on daily basis. 
+%
+\item Streammed using DP-SQLP
+%
+\item Protected using $(\varepsilon, \delta)$ DP with $\varepsilon = 1$ and $\delta = 10^{-9}$
+%
+\end{itemize}
+
+Search trends used to show related queries. 
+ 
+\begin{itemize} \setlength\itemsep{2mm}
+%
+\item Streammed using DP-SQLP
+%
+\item Protected using $(\varepsilon, \delta)$ DP with $\varepsilon = 2$ and $\delta = 10^{-10}$
+%
+\end{itemize}
+
+\end{frame}
+
+%-----------------------------------------------------------------------
+
+\begin{frame}{Linkedin Audience Engagement}
+
+Interactive query system that allows marketers to get information about LinkedIn users engaging with their content. 
+
+\begin{itemize} \setlength\itemsep{2mm}
+%
+\item Each analyst sends queries to the system 
+%
+\item Each query returns $(\varepsilon, \delta)$ DP with $\varepsilon = 0.15$ and $\delta = 10^{-10}$
+%
+\item Monthly limit (budget) for queries is $\varepsilon = 34.9$ and $\delta = 7 \cdot 10^{-9}$
+%
+\item Extra measures to prevent averaging attacks 
+\end{itemize}
+
+\begin{tikzpicture}[overlay, remember picture]
+\node at (current page.north east)[ref] {
+\fullcite{DBLP:journals/corr/abs-2002-05839} \par};
+\end{tikzpicture}
+
+\end{frame}
+
+%-----------------------------------------------------------------------
+
+\begin{frame}{Labor Market Insights}
+
+Data from LinkedIn to measure trends in people changing their occupation. \vskip2mm 
+
+\begin{itemize} \setlength\itemsep{2mm}
+%
+\item Companies who are hiring, using with $\varepsilon = 14.4$ and $\delta = 1.2 \cdot 10^{-9}$
+%
+\item Available jobs, protecting hiring event with $\varepsilon = 14.4$ and $\delta = 1.2 \cdot 10^{-9}$
+%
+\item Required skills, protecting each user's skills information with $\varepsilon = 0.3$ and $\delta = 3 \cdot 10^{-10}$
+%
+\item Extra measures to prevent averaging attacks 
+\end{itemize}
+
+\begin{tikzpicture}[overlay, remember picture]
+\node at (current page.north east)[ref] {
+\fullcite{rogers2020membersapproachenablinglinkedins} \par};
+\end{tikzpicture}
+
+\end{frame}
+
+%-----------------------------------------------------------------------
+
+\section{Other Organizations Applying DP}
+
+%-----------------------------------------------------------------------
+
+\begin{frame}{USA Census Bureau}
+
+\textbf{County Business Patterns} \vskip1mm
+
+\begin{itemize} \setlength\itemsep{2mm}
+%
+\item Business establishments in the USA
+%
+\item Different types of data (including finances) 
+%
+\item Protected with various $(\varepsilon, \delta)$ parameters based on:
+%
+	\begin{itemize} \setlength\itemsep{2mm}
+	%
+	\item Financial assets
+	%
+	\item Annual payroll 
+	%
+	\item Number of employs 
+	%
+	\end{itemize}
+%
+\end{itemize}
+
+Full details are reported {\it \href{https://www.census.gov/topics/business-economy/disclosure/data/tables/cbp-privacy-demonstration-tables.html}{here}}.
+
+\end{frame}
+
+%-----------------------------------------------------------------------
+
+\begin{frame}{USA Census Bureau}
+
+\textbf{The 2020 USA Census} \vskip1mm
+
+\begin{itemize}
+%
+\item Collecting demographic information about USA population \vskip1mm
+%
+\item Datasets protected with various $(\varepsilon, \delta)$ parameters \vskip1mm
+%
+	\begin{itemize} \setlength\itemsep{2mm}
+	%
+	\item {\it \href{https://www.census.gov/programs-surveys/decennial-census/about/rdo/summary-files.html}{Redistricting}} data protected with $\varepsilon = 13.64$
+	%
+	\item {\it \href{https://www.census.gov/data/tables/2023/dec/2020-census-dhc.html}{Demographic Housing}} protected with $\varepsilon = 19.46$
+	%
+	\item Racial and ethnical categories protected with $\varepsilon = 45.68$
+	%
+	\item Suplemental household statistics protected with $\varepsilon = 12.74$
+	%
+	\end{itemize}
+%
+\end{itemize}
+
+\end{frame}
+
+%-----------------------------------------------------------------------
+
+\begin{frame}{USA Census Bureau}
+
+\textbf{Post-Secondary Employment Outcomes} \vskip2mm
+
+\begin{itemize} \setlength\itemsep{2mm}
+%
+\item Earnings and employment of college graduates
+%
+\item Categorized by degree level, degree major, and post-secondary institution
+%
+\item Matching university granscript data with national database of jobs
+%
+\item Each person protected with $\varepsilon = 1.5$
+%
+\end{itemize}
+
+Full details are reported {\it \href{https://lehd.ces.census.gov/doc/PSEOTechnicalDocumentation.pdf}{here}}.
+
+\end{frame}
+
+%-----------------------------------------------------------------------
+
+\begin{frame}{Wikimedia Foundation}
+
+\textbf{Page view statistics} \vskip2mm
+
+\begin{itemize} \setlength\itemsep{2mm}
+%
+\item Distinct users visiting Wiki pages each day from each country
+%
+\item July 1, 2015 to Feb. 8, 2017 protected with $\varepsilon = 1$ on 300 pages view per day
+%
+\item Feb. 9, 2017 to Feb. 5, 2023 protected with $\varepsilon = 1$ on 30 pages view per day
+%
+\item Feb. 6, 2023 onwards protected with $\varepsilon = 0.72$ and $\delta = 10^{-5}$
+%
+\end{itemize}
+
+\begin{tikzpicture}[overlay, remember picture]
+\node at (current page.north east)[ref] {
+\fullcite{adeleye2023publishingwikipediausagedata} \par};
+\end{tikzpicture}
+
+\end{frame}
+
+%-----------------------------------------------------------------------
+
+\begin{frame}{Wikimedia Foundation}
+
+\textbf{Editor statistics} \vskip2mm
+
+\begin{itemize} \setlength\itemsep{2mm}
+%
+\item Statistics about editor activity by project and country \vskip2mm
+%
+\item Monthly published data protected with $\varepsilon = 2$ on editor-project-country-month
+%
+\item Weekly published data protected with $\varepsilon = 2$ on editor-project-country-week
+%
+\item One-off release for Russian editors, protected with $\varepsilon = 0.1$ 
+%
+\end{itemize}
+
+\end{frame}
+
+%-----------------------------------------------------------------------
+
+\begin{frame}{Other Applications}
+
+\begin{itemize} \setlength\itemsep{2mm}
+%
+\item Brave uses distributed DP for collecting user analytics
+%
+\item Spectus published a dashboard with mobility trends during Hurricane Irma
+%
+\item Microsoft Assistive AI collects user data about Office Tools and suggests automatic replies
+%
+\item Google uses DP and federated learning for collecting data and training models for improved text selection and copying on Android
+%
+\end{itemize}
+
+\end{frame}
+
+%-----------------------------------------------------------------------
+
+\section{Standardizations and the Epsilon Registry}
+
+%-----------------------------------------------------------------------
+
+\begin{frame}{Background: Evolution of Information Security}
+
+\textbf{Early days, until the '60s} \vskip2mm
+
+\begin{itemize} \setlength\itemsep{2mm}
+%
+\item Mostly physical security: focus on access to mainframes 
+%
+\item Limited threats: computers were rare and isolated
+%
+\item Computers were mostly used for scientific computations; little or no personal data involved
+%
+\item Basic enkryption: simple ciphers like Caesar sipher were used to ensure message confidentiality
+%
+\end{itemize}
+
+\end{frame}
+
+%-----------------------------------------------------------------------
+
+\begin{frame}{Background: Evolution of Information Security}
+
+\textbf{Rise of the networks, '60s - '90s} \vskip2mm
+
+\begin{itemize} \setlength\itemsep{1mm}
+%
+\item Computer networks and remote access become common
+%
+\item Unauthorized network / system access and data breaches become popular concerns
+%
+\item Cybersecurity emerges as an important discipline
+%
+\item Many remote access protocols with encryption introduced
+% 
+\item Popular symetric cyphers of 64 bits like DES 
+%
+\item Public key cryptography comes out
+%
+\end{itemize}
+
+\end{frame}
+
+%-----------------------------------------------------------------------
+
+\begin{frame}{Background: Evolution of Information Security}
+
+\textbf{The internert era, '00s - present} \vskip2mm
+
+\begin{itemize} \setlength\itemsep{2mm}
+%
+\item Widespread internet usage, online shopping, personal data sharing
+%
+\item Surge in cybercrime, viruses, worms, ransomware, phishing, DDOS attacks
+%
+\item Evolution of security measures: VPNs, firewalls, antiviruses, intrusion detection systems
+%
+\item Evolution of cryptography: 128 bit cyphers like AES become mandatory
+%
+\end{itemize}
+
+\end{frame}
+
+%-----------------------------------------------------------------------
+
+\begin{frame}{Information Security Standards}
+
+\begin{itemize} \setlength\itemsep{4mm}
+%
+\item \textbf{ISO/IEC 27001}: Standards for establishing, implementing, maintaining and improving an ISMS
+%
+\item \textbf{ISO/IEC 27002}: provides a code of practice for information security controls, offering guidance for implementing security policies
+%
+\item \textbf{ISO/IEC 27005}: focuses on information security risk management, helping organizations in assessing and managing risks
+%
+\end{itemize}
+
+\end{frame}
+
+%-----------------------------------------------------------------------
+
+\begin{frame}{Information Privacy vs. Security}
+
+\begin{itemize} \setlength\itemsep{3mm}
+%
+\item Privacy is inherently a more complex concept: who, what, when, where, why
+%
+\item Private information is highly context dependent which makes it difficult to protect
+%
+\item Lack of motivation (unless enforced by law) to protect privacy because of utility (profitability) loss
+%
+\item Can privacy evolution and standardization follow the same path as security?
+%
+\end{itemize}
+
+\end{frame}
+
+%-----------------------------------------------------------------------
+
+\begin{frame}{The Epsilon Registry}
+
+\begin{itemize} \setlength\itemsep{3mm}
+%
+\item DP is being successfully implemented in industry, public sector, academia, etc. 
+%
+\item Still, little understanding of the optimal $\varepsilon$ values for certain systems, purposes, data types, etc.
+%
+\item No clear consensus among practicioneers about:
+%
+	\begin{itemize} \setlength\itemsep{2mm}
+	%
+	\item How to approach the key implementation decisions
+	%
+	\item How to decide about the right privacy guarantees
+	%
+	\item How to choose $\varepsilon$ levels 
+	%
+	\end{itemize}
+%
+\end{itemize}
+
+\begin{tikzpicture}[overlay, remember picture]
+\node at (current page.north east)[ref] {
+\fullcite{dwork_differential_2019} \par};
+\end{tikzpicture}
+
+\end{frame}
+
+%-----------------------------------------------------------------------
+
+\begin{frame}{The Epsilon Registry}
+
+Could a public Epsilon Registry help?
+
+\begin{itemize} \setlength\itemsep{3mm}
+%
+\item Communal body of knowledge about DP implementations
+%
+\item Used by stakeholders, public servants, academics, etc. 
+%
+\item Serve as guideline for identifying and adopting judicious DP implementations
+%
+\end{itemize}
+
+\begin{tikzpicture}[overlay, remember picture]
+\node at (current page.north east)[ref] {
+\fullcite{dwork_differential_2019} \par};
+\end{tikzpicture}
+
+\end{frame}
+
+%-----------------------------------------------------------------------
+
+\begin{frame}{Questions...?}
+
+\pause 
+
+\centering
+\textbf{THANK YOU...!}
+
+\end{frame}
+
+%------------------------------------------------------------------------
+
+\end{document}
+
