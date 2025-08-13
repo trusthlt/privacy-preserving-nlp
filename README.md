@@ -24,6 +24,7 @@ Lecture 08 - Privacy-Preserving Natural Language Processing
 
 Lecture 09 - Attacks on LLMS
 
+Lecture 10 - Real-World DP Application and the Epsilon Registry
 
 ## Exercises
 
