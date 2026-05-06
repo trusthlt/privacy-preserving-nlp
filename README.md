@@ -9,3 +9,5 @@ You will find the slide PDFs under `lectures/lectureXY/pdf/`. The `handout` vers
 Lecture 01 - Introduction
 
 Lecture 02 - Text anonymization
+
+Lecture 03 - Introduction to differential privacy
