@@ -26,13 +26,13 @@ registry.add_recognizer(german_spacy_recognizer)
 # Custom patterns
 full_date_pattern = Pattern(
     name="german_full_date",
-    regex=r"TODO",
-    score=0.8
+    regex=r"\d{1,2}\.\s+(?:Januar|Februar|März|April|May|Juni|Juli|August|September|October|November|Dezember)\s+\d{4}",
+    score=0.9
 )
 
 year_pattern = Pattern(
     name="year_only",
-    regex=r"TODO",
+    regex=r"\d{4}",
     score=0.4
 )
 
