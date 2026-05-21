@@ -11,3 +11,5 @@ Lecture 01 - Introduction
 Lecture 02 - Text anonymization
 
 Lecture 03 - Introduction to differential privacy
+
+Lecture 04 - Laplace and exponential mechanisms
