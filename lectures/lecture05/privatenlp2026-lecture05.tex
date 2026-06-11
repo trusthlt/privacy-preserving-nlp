@@ -1,0 +1,835 @@
+% !TeX program = lualatex
+% !BIB program = biber
+% Lualatex is important to render TTF fonts; with pdflatex it's just the regular one
+% ratio 16:9 -- https://tex.stackexchange.com/questions/14336/
+
+% compile two versions, inspired by https://tex.stackexchange.com/a/1501
+% use the script "compile-pdf.sh"
+\newif\ifhandout
+% if flags.tex does not exist, create an empty file to be able to compile in TeXstudio
+\input{flags}
+
+\ifhandout
+\documentclass[12pt,aspectratio=169,handout]{beamer}
+\else
+\documentclass[12pt,aspectratio=169]{beamer}
+\fi
+
+
+\input{../include/header-include.tex}
+
+% for redacting text
+\usepackage{censor}
+
+\newcommand{\mybox}[1]{\fcolorbox{black!30}{gray!10}{\scriptsize #1}}
+
+
+
+\title{Privacy-Preserving Natural Language Processing}
+\subtitle{Lecture 5 -- Local DP and Randomized Response}
+\date{June 11, 2026}
+\author{Prof.\ Dr.\ Ivan Habernal}
+\institute{
+\texttt{www.trusthlt.org} \\
+Trustworthy Human Language Technologies Group (TrustHLT) \\
+Ruhr University Bochum \& Research Center Trustworthy Data Science and Security}
+
+
+
+\begin{document}
+
+\maketitle
+
+\section{Recap}
+
+
+\begin{frame}{What we covered so far}
+
+\begin{itemize}
+\item For provably private data analysis we need randomized algorithms
+\item Central (with a trusted curator) pure $(\varepsilon, 0)$ differential privacy
+\item Laplace mechanism: numeric queries, $\ell_1$ sensitivity, 
+\item Exponential mechanism: `any-range' queries (arbitrary sets), utility function and its sensitivity
+\end{itemize}
+
+
+%A randomized algorithm (mechanism) $\mathcal{M}$ is $(\varepsilon, 0)$-\textbf{differentially private} if for any two neighboring datasets $D, D'$ and any output $\mathcal{Y} \subseteq \mathcal{Z}$ this guarantee holds:
+%$$
+%\Pr[\mathcal{M}(D) \in \mathcal{Y}] \leq \exp(\varepsilon) \Pr[\mathcal{M}(D') \in \mathcal{Y}]
+%$$
+
+%\begin{tikzpicture}[overlay, remember picture]
+%\node at (current page.north east)[ref] {
+%\fullcite[Definition~2.4]{Dwork.Roth.2013} \par};
+%\end{tikzpicture}
+
+\end{frame}
+
+\begin{frame}{Today}
+
+\begin{itemize}
+\item $\ldots$
+\item Central (with a \textbf{trusted curator}) pure $(\varepsilon, 0)$ differential privacy
+\item $\ldots$
+\end{itemize}
+
+What if we don't trust anyone?
+
+%\begin{tikzpicture}[overlay, remember picture]
+%\node at (current page.north east)[ref] {
+%\fullcite[Definition~2.4]{Dwork.Roth.2013} \par};
+%\end{tikzpicture}
+
+\end{frame}
+
+
+\section{Math refresher}
+
+\begin{frame}{Bernoulli trial (Bernoulli distribution, Bernoulli R.V., etc.)}
+
+Suppose that we run an experiment that succeeds with probability $\theta$ and fails with probability $1 - \theta$
+
+A Bernoulli (or an indicator) random variable $Y$ has the following probability distribution on $k \in \{0, 1\}$
+
+$\Pr(Y = 1) = \theta$
+
+$\Pr(Y = 0) = 1 - \theta$
+
+which can be also expressed as
+
+$\Pr(Y = k)=p^{k}(1-\theta)^{1-k}$
+\end{frame}
+
+
+\section{Local differential privacy}
+
+\begin{frame}{Motivation}
+
+\begin{block}{The notion of neighboring datasets, revisited}
+Database of size 1, replacing one person
+\end{block}
+Can we ask numeric queries on database of size 1?
+
+\pause
+
+Sure!
+
+Example query: How many classes did you skip (and binge-watched Netflix instead)?
+
+True value: between 0 and 15
+
+You just need the $\ell_1$ sensitivity for Laplace mechanism, decide on the $\varepsilon$ and report
+
+\end{frame}
+
+
+\begin{frame}{DP enables learning about population, not individuals!}
+What I'm really interested in is some statistics, e.g., the average number of lectures skipped across all students.
+
+But `privatizing' the `raw' values shown previously removes the need for a trusted curator.
+
+It comes with extra price (to be discussed later)
+
+\end{frame}
+
+\begin{frame}{Simplifying queries}
+Now we know that we can privately (DP) answer statistical queries without a trusted curator
+
+Let's simplify our example even more
+
+\end{frame}
+
+
+\begin{frame}{Reporting single bit}
+Each person has a secret bit, e.g. "I took illegal drugs"
+
+
+The query I might be interested in is `What percentage of students take illegal drugs'
+
+\end{frame}
+
+
+
+\begin{frame}{How to report a single bit}
+
+From true value to reported value
+
+Two extremes
+
+\pause
+
+\begin{itemize}
+\item Just report the true value
+\item Completely random answer (e.g., toss a coin)
+\end{itemize}
+
+Something between these two extremes
+
+\end{frame}
+
+
+
+
+\begin{frame}{How to report a single bit: From true value to reported value}
+
+
+Idea: Report the true value with some probability, `flip' and report otherwise
+
+How to do the above `with some probability' exactly?
+
+Again: Use a randomized algorithm!
+
+\begin{itemize}
+\item Step 1: Draw a random value, either 0 or 1, from a Bernoulli distribution
+\item Step 2: If 1, report true value, if 0 report flipped value
+\end{itemize}
+
+(1 is usually associated with `true' or `success' and 0 with `false' or `failure')
+
+\end{frame}
+
+
+\begin{frame}{How to parametrize this Bernoulli distribution?}
+
+Step 1: Draw 0 or 1 from $\mathrm{Ber}(\theta)$, Step 2: If 1, report true value, if 0 report flipped value
+
+What $\theta$ would we need for modeling the extremes? (by the way: $\theta$ is publicly known! No `security through obscurity'!)
+
+\begin{block}{Extreme 1: \emph{Just report the true value}}
+\pause
+$\mathrm{Ber}(\theta = 1)$ always true value (no privacy)
+\end{block}
+
+\begin{block}{Extreme 2: \emph{Completely random answer}}
+\pause
+
+$\mathrm{Ber}(\theta = 0.5)$ completely random $\rightarrow$ no matter what the raw value is, this is equivalent to reporting a random value
+\end{block}
+
+%\pause
+%Wrong answer:
+%$\mathrm{Ber}(\theta = 0)$ always returns 0 $\rightarrow$ always the opposite of true (no privacy)
+
+
+\end{frame}
+
+\begin{frame}{How to parametrize this Bernoulli distribution?}
+
+We saw that $\theta$ controls the privacy strength and want
+
+$0.5 < \theta < 1.0$
+
+where $0.5 \leftarrow \theta$ --- more privacy
+
+and $\theta \rightarrow 1.0$ --- less privacy
+
+
+How do we control privacy strength in DP?
+
+$0 \leftarrow \varepsilon$ --- more privacy
+
+$\varepsilon \rightarrow \infty$ --- less privacy
+
+We need to find a function that maps $\varepsilon$ to $\theta$ (and also satisfies DP)
+\end{frame}
+
+
+
+\begin{frame}{First attempt}
+
+We want $0.5 < \theta < 1.0$ as a function of $0 \leq \varepsilon \leq \infty$
+
+$\lim_{\varepsilon \to \infty} 1 = 1$
+so does
+$\lim_{\varepsilon \to \infty} \frac{\varepsilon}{\varepsilon} = 1$
+as well as
+$\lim_{\varepsilon \to \infty} \frac{\varepsilon}{\varepsilon + 1} = 1$
+
+But it doesn't work for $\lim_{\varepsilon \to 0}$ yet because $\lim_{\varepsilon \to 0} \frac{\varepsilon}{\varepsilon + 1} \neq 0.5$
+
+The easiest fix: Just add 1!
+
+$\lim_{\varepsilon \to 0} \frac{\varepsilon + 1}{\varepsilon + 1 + 1} = 0.5$ and $\lim_{\varepsilon \to \infty} \frac{\varepsilon + 1}{\varepsilon + 1 + 1} = 1$
+
+So let's try with $\theta = \frac{\varepsilon + 1}{\varepsilon + 2}$
+
+
+\end{frame}
+
+
+
+\begin{frame}{Try to prove DP with our Bernoulli trial}
+
+For any `neighboring' $D, D' \in \{0, 1\}$ and any $y \in \{0, 1\}$ the $\varepsilon$-DP definition must hold:
+$$
+\frac{
+	\Pr(\mathcal{M}(D) = y)
+}{
+	\Pr(\mathcal{M}(D') = y)
+} \leq \exp(\varepsilon)
+$$
+
+
+So let's try with Bernoulli trail and report the true with probability $\theta = \frac{\varepsilon + 1}{\varepsilon + 2}$ (and flip with probability  $1 - \theta$)
+
+\end{frame}
+
+
+
+
+
+\begin{frame}
+
+Let $D = 0, D' = 1, y = 0$ ($D'$ flipped from 1 to 0):
+$$
+\begin{aligned}
+\frac{\Pr(y = 0 | D = 0)}{\Pr(y = 0 | D' = 1)} &=
+\frac{\theta}{1 - \theta}
+=
+\frac{
+\frac{\varepsilon + 1}{\varepsilon + 2}
+}{
+	1 - \frac{\varepsilon + 1}{\varepsilon + 2}
+}
+=
+\frac{
+\frac{\varepsilon + 1}{\varepsilon + 2}
+}{
+\frac{\varepsilon + 2 - (\varepsilon + 1)}{\varepsilon + 2}
+}
+=
+\frac{\varepsilon + 1}{\varepsilon + 2}
+\cdot
+\frac{\varepsilon + 2}{1}
+\\
+&=
+\varepsilon + 1
+\leq \exp(\varepsilon)
+\end{aligned}
+$$
+The same holds also for $D = 1, D' = 0, y = 1$ ($D'$ flipped). For not flipping, the ratio is 1, so the inequality also holds!
+
+Great! We designed a DP algorithm for reporting a single bit (locally)
+
+But can we do any better (with better utility?)
+
+\end{frame}
+
+
+
+
+
+\begin{frame}{Improving the inequality}
+
+\begin{block}{Our first attempt}
+$\frac{\Pr(y = 0 | D = 0)}{\Pr(y = 0 | D' = 1)} =
+\frac{\theta}{1 - \theta} =
+\frac{
+\frac{\varepsilon + 1}{\varepsilon + 2}
+}{
+	1 - \frac{\varepsilon + 1}{\varepsilon + 2}
+}
+=
+\varepsilon + 1
+\leq \exp(\varepsilon)$
+\end{block}
+
+We can approximate $\exp(\varepsilon)$ with a line around 0
+
+$\exp(\varepsilon) \geq 1 + \varepsilon$
+
+but also with a polynom of degree two
+
+$\exp(\varepsilon) \geq 1 + \varepsilon + \frac{\varepsilon^2}{2}$
+
+We get equality with the very definition of using power series
+$\exp(\varepsilon) := \sum_{k = 0}^{\infty} \frac{\varepsilon^k}{k!}$
+\end{frame}
+
+
+\begin{frame}{Improving the inequality}
+
+\begin{block}{Our first attempt}
+$\frac{\Pr(y = 0 | D = 0)}{\Pr(y = 0 | D' = 1)} =
+\frac{\theta}{1 - \theta} =
+\frac{
+\frac{\varepsilon + 1}{\varepsilon + 2}
+}{
+	1 - \frac{\varepsilon + 1}{\varepsilon + 2}
+}
+=
+\varepsilon + 1
+\leq \exp(\varepsilon)$
+\end{block}
+
+What if we replace $\varepsilon + 1$ with $\exp(\varepsilon)$ and worked it out backwards?
+
+
+\begin{block}{Our second attempt}
+$\frac{\Pr(y = 0 | D = 0)}{\Pr(y = 0 | D' = 1)} =
+\frac{\theta}{1 - \theta} =
+\ldots ? \ldots
+=
+\exp(\varepsilon)
+\leq \exp(\varepsilon)$
+\end{block}
+
+
+\end{frame}
+
+
+
+
+
+
+\begin{frame}{Second attempt: Replace $\varepsilon + 1$ with $\exp(\varepsilon)$ backwards}
+
+\begin{block}{First attempt recap (now rewriting with $2 = 1 + 1$)}
+$$
+\begin{aligned}
+\frac{\Pr(y = 0 | D = 0)}{\Pr(y = 0 | D' = 1)} &=
+\frac{
+\frac{\varepsilon + 1}{\varepsilon + 1 + 1}
+}{
+	1 - \frac{\varepsilon + 1}{\varepsilon + 1 + 1}
+}
+=
+\frac{
+\frac{\varepsilon + 1}{\varepsilon + 1 + 1}
+}{
+\frac{\varepsilon + 1 + 1 - (\varepsilon + 1)}{\varepsilon + 1 + 1}
+}\\
+&=
+\frac{\varepsilon + 1}{\varepsilon + 1 + 1}
+\cdot
+\frac{\varepsilon + 1 + 1}{1}
+=
+\varepsilon + 1
+\leq \exp(\varepsilon)
+\end{aligned}
+$$
+\end{block}
+\vspace{-1em}
+$$
+\begin{aligned}
+\frac{\Pr(y = 0 | D = 0)}{\Pr(y = 0 | D' = 1)} &=
+\frac{
+\frac{ \exp(\varepsilon)}{ \exp(\varepsilon) + 1}
+}{
+	1 - \frac{ \exp(\varepsilon)}{ \exp(\varepsilon) + 1}
+}
+=
+\frac{
+\frac{ \exp(\varepsilon)}{ \exp(\varepsilon) + 1}
+}{
+\frac{ \exp(\varepsilon) + 1 -  \exp(\varepsilon)}{ \exp(\varepsilon) + 1}
+}\\
+&=
+\frac{ \exp(\varepsilon)}{ \exp(\varepsilon) + 1}
+\cdot
+\frac{ \exp(\varepsilon) + 1}{1}
+=
+\exp(\varepsilon)
+\leq \exp(\varepsilon)
+\end{aligned}
+$$
+\end{frame}
+
+
+
+
+
+\begin{frame}{Second attempt: Replace $\varepsilon + 1$ with $\exp(\varepsilon)$ backwards}
+
+\begin{block}{We found the tightest $\theta$}
+$$
+\frac{\Pr(y = 0 | D = 0)}{\Pr(y = 0 | D' = 1)} =
+\frac{\theta}{1 - \theta} =
+\frac{
+\frac{ \exp(\varepsilon)}{ \exp(\varepsilon) + 1}
+}{
+	1 - \frac{ \exp(\varepsilon)}{ \exp(\varepsilon) + 1}
+}
+\underbrace{\leq}_{\text{(actually } = \text{)}}
+\exp(\varepsilon)
+$$
+\end{block}
+
+
+Recap our algorithm:
+
+\begin{itemize}
+\item Step 1: Draw a random value, either 0 or 1, from a Bernoulli distribution
+\item Step 2: If 1, report true value, if 0 report flipped value
+\end{itemize}
+
+We found $\theta = \frac{\exp(\varepsilon)}{\exp(\varepsilon) + 1} = \frac{1}{1 + \exp(- \varepsilon)}$ makes it $(\varepsilon, 0)$-DP
+
+
+\end{frame}
+
+
+\begin{frame}{We discovered the "Randomized response" algorithm}
+
+\begin{itemize}
+\item Step 1: Draw a random value, either 0 or 1, from a Bernoulli distribution
+\item Step 2: If 1, report true value, if 0 report flipped value
+\end{itemize}
+
+Parametrize Bernoulli with $\theta = \frac{\exp(\varepsilon)}{\exp(\varepsilon) + 1} = \frac{1}{1 + \exp(- \varepsilon)}$
+
+Homework: Prove that Randomized response is $(\varepsilon, 0)$-DP (just do what we did for any pair of $D, D', y$)
+
+
+\end{frame}
+
+
+
+
+
+\begin{frame}{We discovered the "Randomized response" algorithm}
+
+\begin{itemize}
+\item Step 1: Draw a random value, either 0 or 1, from a Bernoulli distribution
+\item Step 2: If 1, report true value, if 0 report flipped value
+\end{itemize}
+
+Parametrize Bernoulli with $\theta = \frac{\exp(\varepsilon)}{\exp(\varepsilon) + 1} = \frac{1}{1 + \exp(- \varepsilon)}$
+
+Homework: Prove that Randomized response is $(\varepsilon, 0)$-DP (just do what we did for any pair of $D, D', y$)
+
+
+\end{frame}
+
+
+
+% =====================
+
+
+
+\subsection{From single bit to bit strings and beyond}
+\label{sec:randomized.response.bitstring}
+
+\begin{frame}{From single bit to bit strings}
+\begin{itemize}
+\item RR limited to a single boolean variable
+\item Can we protect a bit-string?
+\end{itemize}
+
+\begin{block}{Two views on the process}
+View 1: Ask `What is your $i$-th bit?' for $i = 1, \ldots, n$ consecutively
+\begin{itemize}
+\item Each answer protected independently with RR ($\varepsilon$)
+\item Total spent privacy budget: $n \cdot \varepsilon$
+\end{itemize}
+View 2: Naive composition of $n$ $(\varepsilon, 0)$-DP mechanisms
+\begin{itemize}
+\item $\varepsilon$'s simply sum up
+\end{itemize}
+\end{block}
+\end{frame}
+
+\begin{frame}{Bad consequences for the utility}
+\begin{itemize}
+\item Increasing number of revealed bits has bad consequences for utility
+\item To keep overall budget at $\varepsilon$, each bit's budget is $\varepsilon/n$
+\item Increases probability of \emph{not} reporting the truth
+\item Results in much noisier output vector
+\end{itemize}
+\end{frame}
+
+
+ 
+\begin{frame}{Generalized randomized response}
+\begin{itemize}
+\item Extend range from binary $D \in \{0, 1\}$ to finite set of $k$ categorical values
+\item Set $C = \{1, 2, \ldots, k\}$
+\item True value $t \in C$ reported with probability
+$$
+\theta = \frac{\exp(\varepsilon)}{\exp(\varepsilon) + \abs{C} + 1}
+$$
+\item With probability $1 - \theta$, report random value sampled uniformly from $C \setminus \{t\}$
+\end{itemize}
+\end{frame}
+
+\begin{frame}{Properties of generalized randomized response}
+
+\begin{block}{Properties}
+\begin{itemize}
+\item Generalized randomized response is $(\varepsilon, 0)$-DP
+\item If $C = \{0, 1\}$, it becomes the usual binary randomized response
+´\end{itemize}
+\end{block}
+\end{frame}
+
+
+\section{Using local DP in NLP}
+
+\begin{frame}{Motivation for Local DP in NLP}
+\begin{itemize}
+\item Each data-owner privatizes their data point before releasing to public
+\item Possible use: Privacy protection of training data for classification tasks
+\item Assumption: $n$ individuals each holding data-point (text document + categorical label)
+\item Example: Reviews for binary sentiment analysis (e.g., IMDB)
+\item Sensitive example: Drug reviews (review + stars)
+\item Goal: Train model to classify review into two or multiple classes
+\end{itemize}
+\end{frame}
+
+\begin{frame}{What are we protecting?}
+\begin{itemize}
+\item Single document $d$ (e.g., ``I had really bad headaches ...'')
+\item Associated label $y \in \{0, 1, 2\}$
+\item DP limits information to reconstruct true answer from noisy answer
+\item Interpretation 1: We know it comes from Alice $\rightarrow$ DP protects content
+\item Interpretation 2: Anonymous collection $\rightarrow$ DP protects linkability if text contains signature
+\end{itemize}
+\end{frame}
+
+\begin{frame}{What are we protecting?}
+\begin{block}{Text vs label protection}
+\begin{itemize}
+\item Protect text $d$ (Sensitive content like drug use) or protect label $y$ (Sensitive rating)?
+\item If text reveals label (e.g., bad review text + 0 stars), protecting label might be useless
+\item Or protect text only? (Given 0-star label, we know experience was horrible)
+\item Usually dependent $\rightarrow$ Better protect entire data-point
+\end{itemize}
+\end{block}
+\end{frame}
+
+
+\subsection{Privatizing latent representation}
+
+\begin{frame}{Privatizing latent representation}
+\begin{itemize}
+\item Classifier expects feature vector $x \in \mathbb{R}^j$ and label vector $y \in \mathbb{R}^k$
+\item Alice turns document $d$ into $x$, label into one-hot $y$
+\item Privatize both with DP locally before releasing
+\end{itemize}
+\end{frame}
+
+\subsubsection{Binary vectors}
+
+\begin{frame}{Binary vectors: Bag of Words}
+Standard NLP task: Feature extraction / representation learning
+\begin{itemize}
+\item Baseline: \emph{Bag of words} with vocabulary $V$
+\item Feature vector dimension $j = \abs{V}$
+\item Options:
+\begin{itemize}
+\item Raw counts: $x \in \{0, 1, 2, \ldots\}^j$
+\item Presence/absence: $x \in \{0, 1\}^j$
+\end{itemize}
+\item Label $y$: Single bit ($y \in \{0, 1\}$) or one-hot ($y \in \{0, 1\}^k$)
+\item Privatize $x \to \hat{x}$ and $y \to \hat{y}$ using RR
+\item Split budget $\varepsilon$ into $\varepsilon_1$ (features) and $\varepsilon_2$ (label)
+\item Or spend $\varepsilon_i = \varepsilon / (j + k)$ on each bit
+\end{itemize}
+\end{frame}
+
+\begin{frame}{Crucial problem: Dimensionality $j = \abs{V}$}
+More features (larger $V$) $\rightarrow$ smaller $\varepsilon_i$ per bit $\rightarrow$ More noise introduced to privatized vector
+\begin{itemize}
+\item Example 1: $\varepsilon = 2$, 1 bit $\rightarrow$ flip prob $\approx 0.1192$, looks OK
+\item Example 2: $\varepsilon = 2$, 100 bits $\rightarrow$ $\varepsilon_i = 0.02$ $\rightarrow$ flip prob $\approx 0.4950$
+\begin{itemize}
+\item Result: Each bit almost completely random
+\item Chances to train meaningful classifier look almost impossible
+\end{itemize}
+\item Solution in literature: Drastically increase $\varepsilon$ (e.g., $\varepsilon = 200$)
+\item Consequence: Effectively non-private
+\end{itemize}
+\end{frame}
+
+\subsubsection{What is wrong with large $\varepsilon$ values?}
+\label{sec:what.is.wrong.with.large.epsilons}
+
+\begin{frame}{Problem with large $\varepsilon$}
+\begin{itemize}
+\item Question: What's wrong with $\varepsilon = 200$?
+\item Sensitive question: `Did you take illegal drugs?'
+\item Privatize with randomized response $\varepsilon = 200$
+\item Probability of revealing truth:
+\end{itemize}
+$$
+\frac{1}{1 + \exp(-200)} \approx 0.\underbrace{9999\ldots9999}_{\text{86 times}}891610
+$$
+\begin{itemize}
+\item Standard calculator shows $1.0$
+\item No one willing to participate in such survey
+\end{itemize}
+\end{frame}
+
+\subsubsection{Real-valued vectors}
+
+
+\begin{frame}{Real-valued vectors: Embeddings}
+\begin{itemize}
+\item Deep neural networks produce useful learned representations
+\item Turn text into high-dimensional embeddings vector
+\item Protect text with local DP:
+\begin{itemize}
+\item Turn document into dense embedding (e.g., local transformer)
+\item Apply DP mechanism for real-valued queries (Laplace or Gaussian)
+\item Share privatized vector $\hat{x}$
+\end{itemize}
+\item Guarantees: $(\varepsilon, \delta)$-DP
+\end{itemize}
+\end{frame}
+
+\begin{frame}{Clipping and Sensitivity}
+\begin{itemize}
+\item Real-valued queries must have bounded range
+\item Provide mechanism with global $\ell_1$ or $\ell_2$ sensitivity
+\item Achieved by clipping embeddings to unit ball ($C = 1$)
+\item Clip each dimension $i$: $\bar{x}_i = \min \{x_i, C\}$ or $\max \{x_i, -C\}$
+\item $\ell_1$ sensitivity: $2C \cdot j$ (Manhattan distance)
+\item $\ell_2$ sensitivity: $2C \cdot \sqrt{j}$
+\item Price for privacy: Higher dimension $j$ $\rightarrow$ higher sensitivity $\rightarrow$ more noise
+\end{itemize}
+\end{frame}
+
+\begin{frame}{Using Privatized Embeddings}
+\begin{itemize}
+\item Collect privatized embedding vectors from many users
+\item Vectors are in latent space (`a bunch of numbers')
+\item Use directly as feature vectors for training private classifier
+\item Provided we are also given (privatized!) labels
+\item Question: Can we provide something more useful than noisy text embedding?
+\end{itemize}
+\end{frame}
+
+\subsection{Rewriting texts locally with DP guarantees}
+
+\begin{frame}{Naive Text Rewriting Method}
+\begin{itemize}
+\item Work on text level directly: `privatize' locally to readable text
+\item Fix vocabulary $V$ of $\abs{V}$ words (include \texttt{NOWORD})
+\item Define utility function $u: V \times V \mapsto \mathbb{R}$
+\item Measure similarity (e.g., cosine similarity of static word embeddings)
+\item Score between $-1$ and $1$
+\item Pre-compute utility values (e.g., $1.25$ billion for $50,000$ words)
+\end{itemize}
+\end{frame}
+
+\begin{frame}{Exponential Mechanism Setup}
+\begin{itemize}
+\item Determine sensitivity $\Delta$ for exponential mechanism
+\item Example: $\Delta = 2$ (max difference between $u(w, z) = -1$ and $u(w, w) = 1$)
+\item Fix number of tokens, for example $l = 20$ (huge limitation)
+\item All variables ($V, u, \Delta, l$) publicly known
+\end{itemize}
+\end{frame}
+
+\begin{frame}{Generating word-by-word}
+\begin{itemize}
+\item Query Alice: ``What is your word at position $i$?''
+\item Alice uses exponential mechanism ($\varepsilon_i$)
+\item Draw similar random word from $V$ proportional to utilities
+\item Answer is $(\varepsilon_i, 0)$-DP
+\item Repeat for $l$ positions
+\item Overall budget $\varepsilon = \sum_{i = 1}^{l} \varepsilon_i$
+\end{itemize}
+\end{frame}
+
+\begin{frame}{DP Guarantees and Reconstruction}
+\begin{itemize}
+\item Algorithm is sound: $l$ tokens privatized by local $(\varepsilon, 0)$-DP
+\item Probability of reconstructing true tokens $D$ bounded by:
+$$
+\frac{\Pr[D | \mathcal{M}(D) = y]}{\Pr[D' | \mathcal{M}(D') = y]} \leq \exp(\varepsilon) \cdot \frac{\Pr[D]}{\Pr[D']}
+$$
+\item Takes into account priors $\Pr[D]$
+\item $D'$: Any other possible sequence of twenty tokens from vocabulary $V$
+\item Mental model: Extending randomized response (1 bit) to sequence of categorical values
+\end{itemize}
+\end{frame}
+
+
+\subsection{Encoder-decoder models for private rewriting}
+
+\begin{frame}{Encoder-decoder for Private Rewriting}
+\begin{itemize}
+\item Original space of sequences is extremely high-dimensional
+\item Discrete DP algorithms (exponential mechanism) become infeasible
+\item Route: Work in lower-dimensional latent space (document embeddings)
+\item Unlike just privatizing embedding, use privatized latent vector to generate text
+\end{itemize}
+\end{frame}
+
+\begin{frame}{Transformer-based Approach}
+\begin{itemize}
+\item Early transformers (T5, BART): Encoder + Decoder
+\item Entire input compressed into single real-valued vector
+\item Assumption: Latent vector can be clipped
+\item Privatize latent representation with DP (Laplace or Gaussian)
+\item Decoder rewrites back to text
+\item Advantage: Fluent text (vs. word-by-word random)
+\item Hope: Output similar to input (utility) and differentially private
+\end{itemize}
+\end{frame}
+
+\begin{frame}{DP-BART}
+\begin{itemize}
+\item Example application: DP-BART
+\item Experimented with locally rewriting training data
+\item Tasks: Movie/product reviews, intent classification
+\item `Pruning' latent vector to reduce sensitivity improved privacy/accuracy trade-off
+\item Result: Still ended up using absurdly large $\varepsilon$ values
+\item Exceeded $200$ for most datasets
+\end{itemize}
+\end{frame}
+
+
+
+
+
+\begin{frame}{Summary}
+
+Local DP: No trusted curator needed
+
+Enables privatize raw data and publish with plausible deniability
+
+Randomized response: Known and used since the 1960's
+
+Relevance to NLP: Publishing data for training (but comes with a cost)
+
+Privatizing text practically useless with pure DP, unless absurdly high $\varepsilon$, or something wrong, or very non-standard, or all of them
+
+\end{frame}
+
+
+
+
+\begin{frame}{License and credits}
+
+	\begin{columns}
+		\begin{column}{0.7\textwidth}
+			Licensed under Creative Commons Attribution-ShareAlike 4.0 International (CC BY-SA 4.0)
+		\end{column}
+		\begin{column}{0.2\textwidth}
+			\includegraphics[width=0.9\linewidth]{../include/img/cc-by-sa-icon.pdf}
+		\end{column}
+	\end{columns}
+	
+	\bigskip
+	
+	Credits
+	
+	\begin{scriptsize}
+		
+		Ivan Habernal
+		
+		Content from ACL Anthology papers licensed under CC-BY \url{https://www.aclweb.org/anthology}
+		
+		Partly inspired by lectures from Antti Honkela, Aurélien Bellet, Gautam Kamath
+	
+	\end{scriptsize}
+	
+\end{frame}
+
+
+
+\end{document}
+
+	
