@@ -15,3 +15,5 @@ Lecture 03 - Introduction to differential privacy
 Lecture 04 - Laplace and exponential mechanisms
 
 Lecture 05 - Local DP
+
+Lecture 06 - Approximate DP
