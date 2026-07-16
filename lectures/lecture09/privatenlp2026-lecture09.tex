@@ -1119,13 +1119,13 @@ You are asked to build a trustworthy LLM assistant for a hospital.
 \end{frame}
 
 
-% Compact references: shrink the body font and tighten biblatex's large default
-% inter-entry spacing so the bibliography fits in far fewer slides.
-% Density knob -- change \scriptsize below: \tiny < \scriptsize < \footnotesize < \small.
-\setlength{\bibitemsep}{0.35em}
+% Compact references: biblatex resizes its bibliography ONLY via \bibfont --
+% a plain \scriptsize inside the frame does not affect it. Plus tightened spacing.
+% Density knob -- change \scriptsize here: \tiny < \scriptsize < \footnotesize < \small.
+\renewcommand*{\bibfont}{\scriptsize}
+\setlength{\bibitemsep}{0.3em}
 \setlength{\bibhang}{1em}
 \begin{frame}[allowframebreaks]{References and further reading}
-\scriptsize
 \nocite{*}
 \printbibliography[keyword=peerreviewed, heading=rubbib, title={Peer-reviewed research}]
 \printbibliography[keyword=preprint, heading=rubbib, title={Preprints \& emerging results}]
